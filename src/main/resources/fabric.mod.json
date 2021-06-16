@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "holograms",
+  "version": "${version}",
+
+  "name": "Holograms",
+  "description": "Server side holograms!",
+  "authors": [
+    "Me!"
+  ],
+  "contact": {
+    "homepage": "https://pb4.eu",
+    "sources": "https://github.com/Patbox/Holograms"
+  },
+
+  "license": "LGPLv3",
+  "icon": "assets/holograms/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "eu.pb4.holograms.mod.HologramsMod"
+    ]
+  },
+  "mixins": [
+    "holograms.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.11.3",
+    "fabric": "*",
+    "minecraft": "1.17.x",
+    "java": ">=16"
+  }
+}
