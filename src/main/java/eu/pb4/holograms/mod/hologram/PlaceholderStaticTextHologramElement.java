@@ -4,7 +4,7 @@ import eu.pb4.holograms.api.elements.text.StaticTextHologramElement;
 import eu.pb4.holograms.api.holograms.AbstractHologram;
 import eu.pb4.holograms.mixin.accessors.EntityAccessor;
 import eu.pb4.holograms.mixin.accessors.EntityTrackerUpdateS2CPacketAccessor;
-import eu.pb4.holograms.utils.PacketHelpers;
+import eu.pb4.holograms.mod.util.GeneralUtils;
 import eu.pb4.placeholders.PlaceholderAPI;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
@@ -38,7 +38,7 @@ public class PlaceholderStaticTextHologramElement extends StaticTextHologramElem
                 Text text = this.cache.get(player.getUuid());
                 Text out = this.getTextFor(player);
                 if (!out.equals(text)) {
-                    EntityTrackerUpdateS2CPacket packet = PacketHelpers.createEntityTrackerUpdate();
+                    EntityTrackerUpdateS2CPacket packet = new EntityTrackerUpdateS2CPacket();
                     EntityTrackerUpdateS2CPacketAccessor accessor = (EntityTrackerUpdateS2CPacketAccessor) packet;
                     accessor.setId(this.entityId);
                     List<DataTracker.Entry<?>> data = new ArrayList<>();

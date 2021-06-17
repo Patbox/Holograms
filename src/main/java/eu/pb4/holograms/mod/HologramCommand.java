@@ -368,7 +368,7 @@ public class HologramCommand {
 
         Set<StoredHologram> holograms = ((HoloServerWorld) context.getSource().getWorld()).getHologramManager().holograms;
 
-        for (var hologram : holograms) {
+        for (StoredHologram hologram : holograms) {
             if (hologram.getName().contains(remaining)) {
                 builder.suggest(hologram.getName());
             }

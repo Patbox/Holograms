@@ -3,8 +3,8 @@ plugins {
 	id 'maven-publish'
 }
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version
@@ -21,9 +21,6 @@ repositories {
 	maven { url 'https://maven.gegy.dev' }
 	maven { url 'https://maven.bymartrixx.me' }
 	mavenLocal()
-	flatDir ({
-		dirs "./libs"
-	})
 }
 
 dependencies {
@@ -35,8 +32,8 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	modImplementation include("fr.catcore:server-translations-api:1.4.1")
-	modImplementation include("eu.pb4:placeholder-api:0.4.0")
-	modImplementation include("eu.pb4:hologram-api:0.1.0-1.16.5")
+	modImplementation include("eu.pb4:placeholder-api:0.3.0")
+	modImplementation include("eu.pb4:hologram-api:0.1.0-rc2-1.16-backport")
 	modImplementation include("me.lucko:fabric-permissions-api:0.1-SNAPSHOT")
 
 	modRuntime "supercoder79:databreaker:0.2.7"
@@ -57,8 +54,7 @@ tasks.withType(JavaCompile).configureEach {
 	// If Javadoc is generated, this must be specified in that task too.
 	it.options.encoding = "UTF-8"
 
-	// Minecraft 1.17 (21w19a) upwards uses Java 16.
-	it.options.release = 11
+	it.options.release = 8
 }
 
 java {
