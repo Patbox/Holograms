@@ -1,6 +1,7 @@
 package eu.pb4.holograms.mod.util;
 
 import com.google.common.util.concurrent.AtomicDouble;
+import eu.pb4.holograms.mod.mixin.accessor.TextColorAccessor;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.StringNbtReader;
@@ -9,7 +10,9 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -344,14 +347,14 @@ public class TextParserUtils {
                 final double step = ((double) textColors.size() - 1) / flatString.length();
                 final float sectionSize = ((float) textColors.size() - 1) / (flatString.length() + 1);
 
-                GeneralUtils.HSV hsv = GeneralUtils.rgbToHsv(textColors.get(0).getRgb());
+                GeneralUtils.HSV hsv = GeneralUtils.rgbToHsv(((TextColorAccessor)(Object)textColors.get(0)).getRGB());
                 AtomicDouble hue = new AtomicDouble(hsv.h());
                 AtomicDouble saturation = new AtomicDouble(hsv.s());
                 AtomicDouble value = new AtomicDouble(hsv.v());
 
                 return new GeneralUtils.TextLengthPair(GeneralUtils.toGradient(out.text(), (pos) -> {
-                    GeneralUtils.HSV colorA = GeneralUtils.rgbToHsv(textColors.get((int) (pos * sectionSize)).getRgb());
-                    GeneralUtils.HSV colorB = GeneralUtils.rgbToHsv(textColors.get((int) (pos * sectionSize) + 1).getRgb());
+                    GeneralUtils.HSV colorA = GeneralUtils.rgbToHsv(((TextColorAccessor)(Object)textColors.get((int) (pos * sectionSize))).getRGB());
+                    GeneralUtils.HSV colorB = GeneralUtils.rgbToHsv(((TextColorAccessor)(Object)textColors.get((int) (pos * sectionSize + 1))).getRGB());
 
                     float localHue = (float) hue.get();
                     {
