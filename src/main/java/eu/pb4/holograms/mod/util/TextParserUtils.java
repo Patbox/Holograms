@@ -9,8 +9,11 @@ import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
+import org.spongepowered.asm.util.ObfuscationUtil;
+import org.spongepowered.tools.obfuscation.ObfuscationDataProvider;
 
 import java.awt.*;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -203,7 +206,7 @@ public class TextParserUtils {
 
         TextParser.register("font", (String tag, String data, String input, Map<String, TextParser.TextFormatterHandler> handlers, String endAt) -> {
             GeneralUtils.TextLengthPair out = recursiveParsing(input, handlers, endAt);
-            out.text().fillStyle(Style.EMPTY.withFont(Identifier.tryParse(cleanArgument(data))));
+            out.text().fillStyle(((FontHolder)(Object)Style.EMPTY).setFont(Identifier.tryParse(cleanArgument(data))));
             return out;
         });
 

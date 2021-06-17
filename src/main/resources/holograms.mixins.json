@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_11",
   "mixins": [
     "ServerWorldMixin",
+    "StyleMixin",
     "accessor.TextColorAccessor"
   ],
   "client": [
