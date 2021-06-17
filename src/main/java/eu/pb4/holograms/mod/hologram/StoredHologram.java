@@ -4,9 +4,9 @@ package eu.pb4.holograms.mod.hologram;
 import eu.pb4.holograms.api.holograms.AbstractHologram;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
@@ -74,8 +74,8 @@ public class StoredHologram extends AbstractHologram {
         return this.storedElements;
     }
 
-    public NbtCompound toNbt() {
-        NbtCompound nbt = new NbtCompound();
+    public CompoundTag toNbt() {
+        CompoundTag nbt = new CompoundTag();
         nbt.putString("name", this.name);
         nbt.putDouble("x", this.position.x);
         nbt.putDouble("y", this.position.y);
@@ -83,7 +83,7 @@ public class StoredHologram extends AbstractHologram {
         nbt.putUuid("uuid", this.uuid);
         nbt.putInt("updateRate", Math.max(this.updateRate, 1));
 
-        NbtList list = new NbtList();
+        ListTag list = new ListTag();
 
         for (StoredElement<?> element : this.storedElements) {
             list.add(element.toNbt());
@@ -120,14 +120,14 @@ public class StoredHologram extends AbstractHologram {
         this.position = vec3d;
     }
 
-    public static StoredHologram fromNbt(NbtCompound tag, ServerWorld world) {
+    public static StoredHologram fromNbt(CompoundTag tag, ServerWorld world) {
         StoredHologram hologram = new StoredHologram(world, new Vec3d(tag.getDouble("x"), tag.getDouble("y"), tag.getDouble("z")), VerticalAlign.TOP);
         hologram.name = tag.getString("name");
         hologram.uuid = tag.getUuid("uuid");
         hologram.updateRate = Math.max(tag.getInt("updateRate"), 1);
 
-        for(NbtElement element : tag.getList("elements", NbtElement.COMPOUND_TYPE)) {
-            StoredElement<?> element1 = StoredElement.fromNbt((NbtCompound) element, world);
+        for(Tag element : (ListTag)tag.get("elements")) {
+            StoredElement<?> element1 = StoredElement.fromNbt((CompoundTag) element, world);
             if (element1 != null) {
                 hologram.addElement(element1);
             }

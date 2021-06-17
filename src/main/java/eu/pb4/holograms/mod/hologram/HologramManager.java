@@ -1,9 +1,9 @@
 package eu.pb4.holograms.mod.hologram;
 
 import eu.pb4.holograms.interfaces.HologramHolder;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -23,13 +23,14 @@ public class HologramManager extends PersistentState {
     public final Set<StoredHologram> holograms = new HashSet<>();
 
     public HologramManager(ServerWorld world) {
+        super("holograms");
         this.world = world;
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound nbt) {
+    public CompoundTag toTag(CompoundTag nbt) {
         nbt.putInt("Version", VERSION);
-        NbtList list = new NbtList();
+        ListTag list = new ListTag();
         for (StoredHologram hologram : this.holograms) {
             list.add(hologram.toNbt());
         }
@@ -50,7 +51,10 @@ public class HologramManager extends PersistentState {
             if (this.world.getChunkManager().isChunkLoaded(chunkPos.x, chunkPos.z)) {
                 ((HologramHolder) this.world.getChunkManager().getWorldChunk(chunkPos.x, chunkPos.z, false)).addHologram(hologram);
                 this.world.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(chunkPos, false)
-                        .forEach( player -> hologram.addPlayer(player));
+                        .forEach(entity -> {
+                            System.out.println("Adding player: " + entity.toString());
+                            hologram.addPlayer(entity);
+                        });
                 hologram.show();
             }
             this.setDirty(true);
@@ -131,16 +135,15 @@ public class HologramManager extends PersistentState {
         this.markDirty();
     }
 
-
-    public static HologramManager fromNbt(ServerWorld world, NbtCompound nbt) {
-        HologramManager manager = new HologramManager(world);
+    @Override
+    public void fromTag(CompoundTag nbt) {
         try {
             int version = nbt.getInt("Version");
             if (version == 1) {
-                NbtList list = nbt.getList("Holograms", NbtElement.COMPOUND_TYPE);
-                for (NbtElement element : list) {
+                ListTag list = (ListTag) nbt.get("Holograms");
+                for (Tag element : list) {
                     try {
-                        manager.addHologram(StoredHologram.fromNbt((NbtCompound) element, world));
+                        this.addHologram(StoredHologram.fromNbt((CompoundTag) element, world));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -149,8 +152,5 @@ public class HologramManager extends PersistentState {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return manager;
     }
-
-
 }

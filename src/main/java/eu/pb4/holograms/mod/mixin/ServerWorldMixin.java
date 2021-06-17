@@ -30,11 +30,8 @@ public abstract class ServerWorldMixin implements HoloServerWorld {
     @Shadow public abstract PersistentStateManager getPersistentStateManager();
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    private void initiateHolograms(MinecraftServer server, Executor workerExecutor, LevelStorage.Session session, ServerWorldProperties properties, RegistryKey<World> worldKey, DimensionType dimensionType, WorldGenerationProgressListener worldGenerationProgressListener, ChunkGenerator chunkGenerator, boolean debugWorld, long seed, List<Spawner> spawners, boolean shouldTickTime, CallbackInfo ci) {
-        this.hologramManager = this.getPersistentStateManager().getOrCreate((nbtCompound) -> HologramManager.fromNbt((ServerWorld) (Object) this, nbtCompound),
-                () -> new HologramManager((ServerWorld) (Object) this),
-        "holograms");
-
+    private void initiateHolograms(MinecraftServer server, Executor workerExecutor, LevelStorage.Session session, ServerWorldProperties properties, RegistryKey<World> registryKey, DimensionType dimensionType, WorldGenerationProgressListener worldGenerationProgressListener, ChunkGenerator chunkGenerator, boolean debugWorld, long l, List<Spawner> list, boolean bl, CallbackInfo ci) {
+        this.hologramManager = this.getPersistentStateManager().getOrCreate(() -> new HologramManager((ServerWorld) (Object)this), "holograms");
     }
 
     @Override

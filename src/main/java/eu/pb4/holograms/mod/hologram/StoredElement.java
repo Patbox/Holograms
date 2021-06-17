@@ -9,10 +9,10 @@ import eu.pb4.placeholders.PlaceholderAPI;
 import eu.pb4.placeholders.TextParser;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtDouble;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.DoubleTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
@@ -29,8 +29,8 @@ public abstract class StoredElement<T> {
         }
 
         @Override
-        protected NbtElement valueAsNbt() {
-            return NbtString.of(this.value);
+        protected Tag valueAsNbt() {
+            return StringTag.of(this.value);
         }
 
         @Override
@@ -60,10 +60,10 @@ public abstract class StoredElement<T> {
         }
 
         @Override
-        protected NbtElement valueAsNbt() {
-            NbtCompound compound = new NbtCompound();
-            if (this.value.saveSelfNbt(compound)) {
-                return this.value.writeNbt(compound);
+        protected Tag valueAsNbt() {
+            CompoundTag compound = new CompoundTag();
+            if (this.value.saveSelfToTag(compound)) {
+                return this.value.toTag(compound);
             }
             return null;
         }
@@ -90,8 +90,8 @@ public abstract class StoredElement<T> {
         }
 
         @Override
-        protected NbtElement valueAsNbt() {
-            return this.value.writeNbt(new NbtCompound());
+        protected Tag valueAsNbt() {
+            return this.value.toTag(new CompoundTag());
         }
 
         @Override
@@ -116,8 +116,8 @@ public abstract class StoredElement<T> {
         }
 
         @Override
-        protected NbtElement valueAsNbt() {
-            return NbtDouble.of(this.value);
+        protected Tag valueAsNbt() {
+            return DoubleTag.of(this.value);
         }
 
         @Override
@@ -150,8 +150,8 @@ public abstract class StoredElement<T> {
         return isStatic;
     }
 
-    public NbtCompound toNbt() {
-        NbtCompound nbt = new NbtCompound();
+    public CompoundTag toNbt() {
+        CompoundTag nbt = new CompoundTag();
 
         nbt.putString("Type", this.getType());
         nbt.putBoolean("isStatic", this.isStatic());
@@ -160,24 +160,25 @@ public abstract class StoredElement<T> {
         return nbt;
     }
 
-    protected abstract NbtElement valueAsNbt();
+    protected abstract Tag valueAsNbt();
 
     public abstract HologramElement toElement();
 
     public abstract net.minecraft.text.Text toText();
 
-    public static StoredElement<?> fromNbt(NbtCompound compound, World world) {
+    public static StoredElement<?> fromNbt(CompoundTag compound, World world) {
         try {
             boolean isStatic = compound.getBoolean("isStatic");
-            NbtElement value = compound.get("Value");
+            Tag value = compound.get("Value");
 
-            return switch (compound.getString("Type")) {
-                case "Text" -> new Text(value.asString(), isStatic);
-                case "Entity" -> new Entity(EntityType.getEntityFromNbt((NbtCompound) value, world).get());
-                case "Item" -> new Item(ItemStack.fromNbt((NbtCompound) value), isStatic);
-                case "Space" -> new Space(((NbtDouble) value).doubleValue());
-                default -> null;
-            };
+            switch (compound.getString("Type")) {
+                case "Text": return new Text(value.asString(), isStatic);
+                case "Entity":
+                    return new Entity(EntityType.fromTag((CompoundTag) value).get().create(world));
+                case "Item": return new Item(ItemStack.fromTag((CompoundTag) value), isStatic);
+                case "Space": return new Space(((DoubleTag) value).getDouble());
+                default: return null;
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return null;
