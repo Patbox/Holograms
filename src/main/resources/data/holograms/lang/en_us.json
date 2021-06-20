@@ -4,6 +4,7 @@
   "text.holograms.created": "Created hologram %s at position %s!",
   "text.holograms.moved": "Moved hologram %s to %s!",
   "text.holograms.deleted": "Deleted hologram %s!",
+  "text.holograms.renamed": "Renamed hologram %s to %s!",
   "text.holograms.removed_line": "Removed line \"%3$s\" (%2$s) from %1$s",
   "text.holograms.non_existing_line": "Line %2$s doesn't exist on %1$s!",
 

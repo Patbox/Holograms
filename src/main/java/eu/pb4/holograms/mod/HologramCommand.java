@@ -54,6 +54,14 @@ public class HologramCommand {
                                             .executes(HologramCommand::removeHologram)
                                     )
                             )
+                            .then(literal("rename")
+                                    .requires(Permissions.require("holograms.admin", 2))
+                                    .then(argument("name", StringArgumentType.word()).suggests(HologramCommand::hologramsSuggestion)
+                                        .then(argument("new_name", StringArgumentType.word())
+                                            .executes(HologramCommand::renameHologram)
+                                        )
+                                    )
+                            )
                             .then(literal("teleportTo")
                                     .requires(Permissions.require("holograms.admin", 2))
                                     .then(argument("name", StringArgumentType.word()).suggests(HologramCommand::hologramsSuggestion)
@@ -173,6 +181,28 @@ public class HologramCommand {
         } else {
             manager.removeHologram(name);
             context.getSource().sendFeedback(new TranslatableText("text.holograms.deleted", new LiteralText(name).formatted(Formatting.GOLD)), false);
+            return 1;
+        }
+    }
+
+    private static int renameHologram(CommandContext<ServerCommandSource> context) {
+        ServerWorld world = context.getSource().getWorld();
+        HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+        String name = context.getArgument("name", String.class);
+        String new_name = context.getArgument("new_name", String.class);
+
+        if (!manager.hologramsByName.containsKey(name)) {
+            context.getSource().sendFeedback(new TranslatableText("text.holograms.invalid_hologram", new LiteralText(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            return 0;
+        } else {
+            if (manager.hologramsByName.containsKey(new_name)) {
+                context.getSource().sendFeedback(new TranslatableText("text.holograms.already_exist", new LiteralText(new_name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            } else {
+                StoredHologram hologram = manager.hologramsByName.remove(name);
+                hologram.setName(new_name);
+                manager.hologramsByName.put(new_name, hologram);
+                context.getSource().sendFeedback(new TranslatableText("text.holograms.renamed", new LiteralText(name).formatted(Formatting.GOLD), new LiteralText(new_name).formatted(Formatting.GOLD)), false);
+            }
             return 1;
         }
     }
