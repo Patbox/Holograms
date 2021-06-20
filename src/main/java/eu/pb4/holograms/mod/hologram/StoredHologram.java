@@ -20,7 +20,7 @@ public class StoredHologram extends AbstractHologram {
     protected String name;
     protected UUID uuid;
     protected List<StoredElement<?>> storedElements = new ArrayList<>();
-    private int updateRate;
+    protected int updateRate;
     protected HologramManager manager = null;
 
     public StoredHologram(ServerWorld world, Vec3d position, VerticalAlign alignment) {

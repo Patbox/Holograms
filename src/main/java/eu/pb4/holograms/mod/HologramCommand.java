@@ -11,19 +11,22 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import eu.pb4.holograms.mod.hologram.HoloServerWorld;
 import eu.pb4.holograms.mod.hologram.HologramManager;
-import eu.pb4.holograms.mod.hologram.StoredHologram;
 import eu.pb4.holograms.mod.hologram.StoredElement;
+import eu.pb4.holograms.mod.hologram.StoredHologram;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.minecraft.command.argument.*;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.command.CommandManager;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.Registry;
 
 import java.util.Locale;
 import java.util.Set;
@@ -34,7 +37,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class HologramCommand {
     public static void register() {
-        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
+        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) ->
             dispatcher.register(
                     literal("holograms")
                             .requires(Permissions.require("holograms.main", true))
@@ -57,9 +60,9 @@ public class HologramCommand {
                             .then(literal("rename")
                                     .requires(Permissions.require("holograms.admin", 2))
                                     .then(argument("name", StringArgumentType.word()).suggests(HologramCommand::hologramsSuggestion)
-                                        .then(argument("new_name", StringArgumentType.word())
-                                            .executes(HologramCommand::renameHologram)
-                                        )
+                                            .then(argument("new_name", StringArgumentType.word())
+                                                    .executes(HologramCommand::renameHologram)
+                                            )
                                     )
                             )
                             .then(literal("teleportTo")
@@ -111,37 +114,67 @@ public class HologramCommand {
                                             .executes(HologramCommand::infoHologram)
                                     )
                             )
-            );
-        });
+            )
+        );
     }
 
     private static ArgumentBuilder<ServerCommandSource, ?> modificationArgument(ArgumentBuilder<ServerCommandSource, ?> base, ModificationCallback callback) {
         return base
-        .then(literal("item").then(
-                literal("hand")
-                        .executes(ctx -> callback.modify(ctx,
-                                new StoredElement.Item(ctx.getSource().getPlayer().getMainHandStack(), false)))
-                        .then(argument("static", BoolArgumentType.bool()).executes(ctx -> callback.modify(ctx,
-                                new StoredElement.Item(ctx.getSource().getPlayer().getMainHandStack(), ctx.getArgument("static", Boolean.class))))
-                        )
-                ).then(
-                literal("nbt").then(
-                        argument("item", ItemStackArgumentType.itemStack())
+                .then(literal("item").then(
+                        literal("hand")
                                 .executes(ctx -> callback.modify(ctx,
-                                        new StoredElement.Item(ctx.getArgument("item", ItemStackArgument.class).createStack(1, false), false)))
+                                        new StoredElement.Item(ctx.getSource().getPlayer().getMainHandStack(), false)))
                                 .then(argument("static", BoolArgumentType.bool()).executes(ctx -> callback.modify(ctx,
-                                        new StoredElement.Item(ctx.getArgument("item", ItemStackArgument.class).createStack(1, false), ctx.getArgument("static", Boolean.class))))
+                                        new StoredElement.Item(ctx.getSource().getPlayer().getMainHandStack(), ctx.getArgument("static", Boolean.class))))
                                 )
-                )
-        )).then(literal("text").then(
-                argument("text", StringArgumentType.greedyString())
-                        .executes(ctx -> callback.modify(ctx,
-                                new StoredElement.Text(ctx.getArgument("text", String.class), true)))
-        )).then(literal("space").then(
-                argument("size", DoubleArgumentType.doubleArg(0))
-                        .executes(ctx -> callback.modify(ctx,
-                                new StoredElement.Space(ctx.getArgument("size", Double.class))))
-        ));
+                ).then(
+                        literal("nbt").then(
+                                argument("item", ItemStackArgumentType.itemStack())
+                                        .executes(ctx -> callback.modify(ctx,
+                                                new StoredElement.Item(ctx.getArgument("item", ItemStackArgument.class).createStack(1, false), false)))
+                                        .then(argument("static", BoolArgumentType.bool()).executes(ctx -> callback.modify(ctx,
+                                                new StoredElement.Item(ctx.getArgument("item", ItemStackArgument.class).createStack(1, false), ctx.getArgument("static", Boolean.class))))
+                                        )
+                        )
+                )).then(literal("text").then(
+                        argument("text", StringArgumentType.greedyString())
+                                .executes(ctx -> callback.modify(ctx,
+                                        new StoredElement.Text(ctx.getArgument("text", String.class), true)))
+                )).then(literal("space").then(
+                        argument("size", DoubleArgumentType.doubleArg(0))
+                                .executes(ctx -> callback.modify(ctx,
+                                        new StoredElement.Space(ctx.getArgument("size", Double.class))))
+                )).then(literal("entity").then(
+                        argument("entity", EntitySummonArgumentType.entitySummon())
+                                .executes(ctx -> callback.modify(ctx,
+                                        new StoredElement.Entity(
+                                                Registry.ENTITY_TYPE.get(ctx.getArgument("entity", Identifier.class))
+                                                        .create(ctx.getSource().getWorld()), true))
+                                ).then(argument("nbt", NbtCompoundArgumentType.nbtCompound())
+                                .executes(ctx -> {
+                                            NbtCompound nbtCompound = ctx.getArgument("nbt", NbtCompound.class);
+                                            nbtCompound.putString("id", ctx.getArgument("entity", Identifier.class).toString());
+                                            ServerWorld serverWorld = ctx.getSource().getWorld();
+                                            Entity entity2 = EntityType.loadEntityWithPassengers(nbtCompound, serverWorld, (entity) -> entity);
+
+                                            return callback.modify(ctx,
+                                                    new StoredElement.Entity(entity2, true));
+                                        }
+                                ).then(argument("lookAtPlayer", BoolArgumentType.bool())
+                                        .executes(ctx -> {
+                                            NbtCompound nbtCompound = ctx.getArgument("nbt", NbtCompound.class);
+                                            nbtCompound.putString("id", ctx.getArgument("entity", Identifier.class).toString());
+                                            ServerWorld serverWorld = ctx.getSource().getWorld();
+                                            Entity entity2 = EntityType.loadEntityWithPassengers(nbtCompound, serverWorld, (entity) -> entity);
+
+                                            return callback.modify(ctx,
+                                                    new StoredElement.Entity(entity2, !ctx.getArgument("lookAtPlayer", Boolean.class)));
+                                        })
+                                )
+
+                        )
+                        )
+                );
     }
 
     private static int createHologram(CommandContext<ServerCommandSource> context) {
@@ -298,7 +331,7 @@ public class HologramCommand {
                                                 .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/holograms modify " + hologram.getName() + " lines set " + x))
                                                 .withColor(Formatting.DARK_GRAY)
                                         )
-                                )
+                        )
                         .append(element.toText());
 
                 context.getSource().sendFeedback(text1, false);

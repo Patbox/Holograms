@@ -50,8 +50,8 @@ public abstract class StoredElement<T> {
     }
 
     public static final class Entity extends StoredElement<net.minecraft.entity.Entity> {
-        public Entity(net.minecraft.entity.Entity value) {
-            super(value, false);
+        public Entity(net.minecraft.entity.Entity value, boolean isStatic) {
+            super(value, isStatic);
         }
 
         @Override
@@ -70,7 +70,7 @@ public abstract class StoredElement<T> {
 
         @Override
         public HologramElement toElement() {
-            return new EntityHologramElement(this.value);
+            return isStatic ? new EntityHologramElement(this.value) : new MovingEntityHologramElement(this.value);
         }
 
         @Override
@@ -173,7 +173,7 @@ public abstract class StoredElement<T> {
 
             return switch (compound.getString("Type")) {
                 case "Text" -> new Text(value.asString(), isStatic);
-                case "Entity" -> new Entity(EntityType.getEntityFromNbt((NbtCompound) value, world).get());
+                case "Entity" -> new Entity(EntityType.getEntityFromNbt((NbtCompound) value, world).get(), isStatic);
                 case "Item" -> new Item(ItemStack.fromNbt((NbtCompound) value), isStatic);
                 case "Space" -> new Space(((NbtDouble) value).doubleValue());
                 default -> null;

@@ -1,7 +1,11 @@
 # Holograms
-![Example image](https://i.imgur.com/g4Gff7D.png)
+![Example image](https://i.imgur.com/UVkrydt.png)
 It's a simple mod that allows to create of server side holograms with full support for formatting and items.
 Everything is created on packet level, which means commands or other mods shouldn't break them.
+[Formatting uses PlaceholderAPI's Text Parser for which docs you can find here](https://github.com/Patbox/FabricPlaceholderAPI/blob/1.17/TEXT_FORMATTING.md).
+It also supports usage of placeholders from [Placeholder API](https://github.com/Patbox/FabricPlaceholderAPI/wiki).
+
+If you have any questions, you can ask them on my [Discord](https://pb4.eu/discord)
 
 ![Example image 2](https://i.imgur.com/7VacPE7.gif)
 
