@@ -97,6 +97,10 @@ public class StoredHologram extends AbstractHologram {
         return this.position;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getName() {
         return this.name;
     }
