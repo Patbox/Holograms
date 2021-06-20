@@ -55,13 +55,7 @@ public class PlaceholderStaticTextHologramElement extends StaticTextHologramElem
         }
 
         if (clean) {
-            Set<UUID> uuids = this.cache.keySet();
-
-            for (UUID uuid : uuids) {
-                if (!this.cleanup.contains(uuid)) {
-                    this.cache.remove(uuid);
-                }
-            }
+            this.cache.keySet().removeIf(uuid -> !this.cleanup.contains(uuid));
             this.cleanup.clear();
         }
     }

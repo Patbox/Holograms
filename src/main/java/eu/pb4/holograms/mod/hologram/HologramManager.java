@@ -103,7 +103,7 @@ public class HologramManager extends PersistentState {
 
     public void moveHologram(StoredHologram hologram, Vec3d vec3d) {
         hologram.hide();
-        for (ServerPlayerEntity player : hologram.getPlayerSet()) {
+        for (ServerPlayerEntity player : new HashSet<>(hologram.getPlayerSet())) {
             hologram.removePlayer(player);
         }
         Vec3d oldPos = hologram.getPosition();
