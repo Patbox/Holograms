@@ -295,7 +295,7 @@ public class HologramCommand {
                         .append(
                                 new TranslatableText("[%s] ", new LiteralText("" + x).formatted(Formatting.WHITE))
                                         .setStyle(Style.EMPTY
-                                                .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, "/holograms modify " + hologram.getName() + " lines set " + x))
+                                                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/holograms modify " + hologram.getName() + " lines set " + x))
                                                 .withColor(Formatting.DARK_GRAY)
                                         )
                                 )
