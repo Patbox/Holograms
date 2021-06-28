@@ -28,6 +28,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -83,6 +84,17 @@ public class HologramCommand {
                                                     .executes(HologramCommand::moveHologram)
                                                     .then(argument("pos", Vec3ArgumentType.vec3(true))
                                                             .executes(HologramCommand::moveHologram)
+                                                    )
+                                            )
+                                            .then(literal("permission")
+                                                    .then(literal("remove").executes(HologramCommand::removePermission))
+                                                    .then(literal("set")
+                                                            .then(argument("permission", StringArgumentType.word())
+                                                                    .executes(HologramCommand::setPermission)
+                                                                    .then(argument("op", IntegerArgumentType.integer(1, 4))
+                                                                            .executes(HologramCommand::setPermission)
+                                                                    )
+                                                            )
                                                     )
                                             )
                                             .then(literal("lines")
@@ -144,7 +156,58 @@ public class HologramCommand {
                         argument("size", DoubleArgumentType.doubleArg(0))
                                 .executes(ctx -> callback.modify(ctx,
                                         new StoredElement.Space(ctx.getArgument("size", Double.class))))
-                )).then(literal("entity").then(
+                )).then(literal("execute")
+                        .requires(Permissions.require("holograms.executable", 4))
+                        .then(
+                        argument("hitbox", StringArgumentType.word())
+                                .suggests(HologramCommand::hitboxSuggestion)
+                                .then(argument("mode", StringArgumentType.word())
+                                        .suggests(HologramCommand::modeSuggestion)
+                                        .then(argument("command", StringArgumentType.greedyString())
+                                                .executes(ctx -> {
+                                                    String hitboxS = ctx.getArgument("hitbox", String.class);
+                                                    try {
+                                                        StoredElement.Executor.Hitbox hitbox = StoredElement.Executor.Hitbox.valueOf(hitboxS.toUpperCase(Locale.ROOT));
+                                                        String modeS = ctx.getArgument("mode", String.class);
+                                                        try {
+                                                            StoredElement.Executor.Mode mode = StoredElement.Executor.Mode.valueOf(modeS.toUpperCase(Locale.ROOT));
+                                                            return callback.modify(ctx,
+                                                                    new StoredElement.Executor(new StoredElement.Executor.Value(hitbox, mode, ctx.getArgument("command", String.class))));
+                                                        } catch (Exception e) {
+                                                            ctx.getSource().sendFeedback(new TranslatableText("text.holograms.invalid_mode", new LiteralText(modeS).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+                                                            return 0;
+                                                        }
+                                                    } catch (Exception e) {
+                                                        ctx.getSource().sendFeedback(new TranslatableText("text.holograms.invalid_hitbox", new LiteralText(hitboxS).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+                                                        return 0;
+                                                    }
+                                                })
+                                        )
+                                )
+
+                )).then(literal("copy").then(
+                        argument("base", IntegerArgumentType.integer(0))
+                                .executes(ctx -> {
+                                    ServerWorld world = ctx.getSource().getWorld();
+                                    HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+                                    String name = ctx.getArgument("name", String.class);
+
+                                    if (!manager.hologramsByName.containsKey(name)) {
+                                        ctx.getSource().sendFeedback(new TranslatableText("text.holograms.invalid_hologram", new LiteralText(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+                                        return 0;
+                                    } else {
+                                        List<StoredElement<?>> elements = manager.hologramsByName.get(name).getStoredElements();
+                                        int baseLine = ctx.getArgument("base", Integer.class);
+
+                                        if (elements.size() - 1 < baseLine) {
+                                            ctx.getSource().sendFeedback(new TranslatableText("text.holograms.non_existing_line", new LiteralText(name).formatted(Formatting.GOLD), baseLine).formatted(Formatting.RED), false);
+                                            return 0;
+                                        }
+
+                                        return callback.modify(ctx, elements.get(baseLine).copy(ctx.getSource().getWorld()));
+                                    }
+                                }
+                ))).then(literal("entity").then(
                         argument("entity", EntitySummonArgumentType.entitySummon())
                                 .executes(ctx -> callback.modify(ctx,
                                         new StoredElement.Entity(
@@ -302,6 +365,52 @@ public class HologramCommand {
         }
     }
 
+    private static int setPermission(CommandContext<ServerCommandSource> context) {
+        ServerWorld world = context.getSource().getWorld();
+        HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+        String name = context.getArgument("name", String.class);
+
+        if (!manager.hologramsByName.containsKey(name)) {
+            context.getSource().sendFeedback(new TranslatableText("text.holograms.invalid_hologram", new LiteralText(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            return 0;
+        } else {
+            StoredHologram hologram = manager.hologramsByName.get(name);
+
+            int operator = 4;
+            try {
+                operator = context.getArgument("op", Integer.class);
+            } catch (Exception e) {
+                // Non issue
+            }
+            String permission = context.getArgument("permission", String.class);
+
+            hologram.setPermissions(permission, operator);
+
+            context.getSource().sendFeedback(new TranslatableText("text.holograms.permission_changed",
+                    new LiteralText(name).formatted(Formatting.GOLD),
+                    new LiteralText(permission).formatted(Formatting.YELLOW),
+                    new LiteralText("" + operator).formatted(Formatting.YELLOW)), false);
+            return 1;
+        }
+    }
+
+    private static int removePermission(CommandContext<ServerCommandSource> context) {
+        ServerWorld world = context.getSource().getWorld();
+        HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+        String name = context.getArgument("name", String.class);
+
+        if (!manager.hologramsByName.containsKey(name)) {
+            context.getSource().sendFeedback(new TranslatableText("text.holograms.invalid_hologram", new LiteralText(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            return 0;
+        } else {
+            StoredHologram hologram = manager.hologramsByName.get(name);
+
+            hologram.setPermissions("", 0);
+            context.getSource().sendFeedback(new TranslatableText("text.holograms.permission_removed",
+                    new LiteralText(name).formatted(Formatting.GOLD)), false);
+            return 1;
+        }    }
+
     private static int infoHologram(CommandContext<ServerCommandSource> context) {
         ServerWorld world = context.getSource().getWorld();
         HologramManager manager = ((HoloServerWorld) world).getHologramManager();
@@ -382,6 +491,31 @@ public class HologramCommand {
         }
     }
 
+    /*private static int moveElement(CommandContext<ServerCommandSource> context) {
+        ServerWorld world = context.getSource().getWorld();
+        HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+        String name = context.getArgument("name", String.class);
+
+        if (!manager.hologramsByName.containsKey(name)) {
+            context.getSource().sendFeedback(new TranslatableText("text.holograms.invalid_hologram", new LiteralText(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            return 0;
+        } else {
+            StoredHologram hologram = manager.hologramsByName.get(name);
+            int pos = context.getArgument("position", Integer.class);
+            int posNew = context.getArgument("new-position", Integer.class);
+
+            if (hologram.getElements().size() - 1 < pos) {
+                context.getSource().sendFeedback(new TranslatableText("text.holograms.non_existing_line", new LiteralText(name).formatted(Formatting.GOLD), pos).formatted(Formatting.RED), false);
+                return 0;
+            }
+
+
+            hologram.insertElement(posNew, hologram.removeStoredElement(pos));
+            context.getSource().sendFeedback(new TranslatableText("text.holograms.moved_line", new LiteralText(name).formatted(Formatting.GOLD), pos, element.toText()), false);
+            return 1;
+        }
+    }
+*/
     private static int addElement(CommandContext<ServerCommandSource> context, StoredElement<?> element) {
         ServerWorld world = context.getSource().getWorld();
         HologramManager manager = ((HoloServerWorld) world).getHologramManager();
@@ -431,12 +565,35 @@ public class HologramCommand {
         Set<StoredHologram> holograms = ((HoloServerWorld) context.getSource().getWorld()).getHologramManager().holograms;
 
         for (var hologram : holograms) {
-            if (hologram.getName().contains(remaining)) {
+            if (hologram.getName().toLowerCase(Locale.ROOT).contains(remaining)) {
                 builder.suggest(hologram.getName());
             }
         }
         return builder.buildFuture();
     }
+
+    private static CompletableFuture<Suggestions> hitboxSuggestion(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) {
+        String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
+
+        for (var hitbox : StoredElement.Executor.Hitbox.values()) {
+            if (hitbox.name().toLowerCase(Locale.ROOT).contains(remaining)) {
+                builder.suggest(hitbox.name().toLowerCase(Locale.ROOT));
+            }
+        }
+        return builder.buildFuture();
+    }
+
+    private static CompletableFuture<Suggestions> modeSuggestion(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) {
+        String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
+
+        for (var hitbox : StoredElement.Executor.Mode.values()) {
+            if (hitbox.name().toLowerCase(Locale.ROOT).contains(remaining)) {
+                builder.suggest(hitbox.name().toLowerCase(Locale.ROOT));
+            }
+        }
+        return builder.buildFuture();
+    }
+
 
     @FunctionalInterface
     private interface ModificationCallback {

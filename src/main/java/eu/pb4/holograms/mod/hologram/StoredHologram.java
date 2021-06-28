@@ -2,17 +2,22 @@ package eu.pb4.holograms.mod.hologram;
 
 
 import eu.pb4.holograms.api.holograms.AbstractHologram;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,6 +27,8 @@ public class StoredHologram extends AbstractHologram {
     protected List<StoredElement<?>> storedElements = new ArrayList<>();
     protected int updateRate;
     protected HologramManager manager = null;
+    protected String permission = "";
+    protected int operator;
 
     public StoredHologram(ServerWorld world, Vec3d position, VerticalAlign alignment) {
         super(world, position, alignment);
@@ -124,6 +131,24 @@ public class StoredHologram extends AbstractHologram {
         this.position = vec3d;
     }
 
+    public void setPermissions(String permission, int operator) {
+        this.permission = permission;
+        this.operator = operator;
+
+        for (ServerPlayerEntity player : new HashSet<>(this.players)) {
+            if (!this.canAddPlayer(player)) {
+                this.removePlayer(player);
+            }
+        }
+        this.world.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(new ChunkPos(new BlockPos(this.position.x, this.position.y, this.position.z)), false)
+                .forEach(player -> this.addPlayer(player));
+    }
+
+    @Override
+    public boolean canAddPlayer(ServerPlayerEntity player) {
+        return this.operator == 0 || Permissions.check(player, this.permission, this.operator);
+    }
+
     public static StoredHologram fromNbt(NbtCompound tag, ServerWorld world) {
         StoredHologram hologram = new StoredHologram(world, new Vec3d(tag.getDouble("x"), tag.getDouble("y"), tag.getDouble("z")), VerticalAlign.TOP);
         hologram.name = tag.getString("name");
@@ -131,9 +156,13 @@ public class StoredHologram extends AbstractHologram {
         hologram.updateRate = Math.max(tag.getInt("updateRate"), 1);
 
         for(NbtElement element : tag.getList("elements", NbtElement.COMPOUND_TYPE)) {
-            StoredElement<?> element1 = StoredElement.fromNbt((NbtCompound) element, world);
-            if (element1 != null) {
-                hologram.addElement(element1);
+            try {
+                StoredElement<?> element1 = StoredElement.fromNbt((NbtCompound) element, world);
+                if (element1 != null) {
+                    hologram.addElement(element1);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 

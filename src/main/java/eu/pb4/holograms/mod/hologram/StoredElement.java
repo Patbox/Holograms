@@ -13,9 +13,15 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtDouble;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
+
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.function.Function;
 
 public abstract class StoredElement<T> {
     public static final class Text extends StoredElement<String> {
@@ -131,6 +137,79 @@ public abstract class StoredElement<T> {
         }
     }
 
+    public static final class Executor extends StoredElement<Executor.Value> {
+        public Executor(Value value) {
+            super(value, false);
+        }
+
+        @Override
+        public String getType() {
+            return "Executor";
+        }
+
+        @Override
+        protected NbtElement valueAsNbt() {
+            NbtCompound compound = new NbtCompound();
+            compound.putString("Command", this.value.command);
+            compound.putString("Hitbox", this.value.hitbox.name());
+            compound.putString("Mode", this.value.mode.name());
+
+            return compound;
+        }
+
+        @Override
+        public HologramElement toElement() {
+            return this.value.hitbox.type == EntityType.SLIME ? new CubeExecutorHologramElement(this.value) : new GeneralExecutorHologramElement(this.value);
+        }
+
+        @Override
+        public net.minecraft.text.Text toText() {
+            return new TranslatableText("text.holograms.executor_name")
+                    .setStyle(Style.EMPTY.withColor(Formatting.GRAY)
+                            .withItalic(true).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText("text.holograms.executor_hover",
+                                    new LiteralText(this.value.hitbox.toString().toLowerCase(Locale.ROOT)).formatted(Formatting.RED),
+                                    new LiteralText(this.value.mode.toString().toLowerCase(Locale.ROOT)).formatted(Formatting.GOLD),
+                                new LiteralText(this.value.command).formatted(Formatting.WHITE)).formatted(Formatting.YELLOW)
+                            )));
+        }
+
+        public record Value(Hitbox hitbox, Mode mode, String command) {};
+
+        public enum Hitbox {
+            SLIME_SMALL(EntityType.SLIME, 0),
+            SLIME_NORMAL(EntityType.SLIME, 1),
+            SLIME_BIG(EntityType.SLIME, 2),
+            CHICKEN(EntityType.CHICKEN, 0),
+            ZOMBIE(EntityType.ZOMBIE, 0),
+            PIG(EntityType.PIG, 0),
+            GIANT(EntityType.CHICKEN, 0);
+
+            public final EntityType<?> type;
+            public final int size;
+
+            Hitbox(EntityType<?> type, int size) {
+                this.type = type;
+                this.size = size;
+            }
+        }
+
+        public enum Mode {
+            PLAYER(p -> p.getCommandSource()),
+            PLAYER_SILENT(p -> p.getCommandSource().withSilent()),
+            PLAYER_AS_OP(p -> p.getCommandSource().withLevel(4)),
+            PLAYER_AS_OP_SILENT(p -> p.getCommandSource().withLevel(4).withSilent()),
+            CONSOLE(p -> p.getServer().getCommandSource()),
+            CONSOLE_SILENT(p -> p.getServer().getCommandSource().withSilent());
+
+
+            public final Function<ServerPlayerEntity, ServerCommandSource> toSource;
+
+            Mode(Function<ServerPlayerEntity, ServerCommandSource> fun) {
+                this.toSource = fun;
+            }
+        }
+    }
+
     public StoredElement(T value, boolean isStatic) {
         this.value = value;
         this.isStatic = isStatic;
@@ -166,6 +245,10 @@ public abstract class StoredElement<T> {
 
     public abstract net.minecraft.text.Text toText();
 
+    public StoredElement<?> copy(World world) {
+        return StoredElement.fromNbt(this.toNbt(), world);
+    }
+
     public static StoredElement<?> fromNbt(NbtCompound compound, World world) {
         try {
             boolean isStatic = compound.getBoolean("isStatic");
@@ -176,6 +259,14 @@ public abstract class StoredElement<T> {
                 case "Entity" -> new Entity(EntityType.getEntityFromNbt((NbtCompound) value, world).get(), isStatic);
                 case "Item" -> new Item(ItemStack.fromNbt((NbtCompound) value), isStatic);
                 case "Space" -> new Space(((NbtDouble) value).doubleValue());
+                case "Executor" -> new Executor(
+                        new Executor.Value(
+                                Executor.Hitbox.valueOf(((NbtCompound) value).getString("Hitbox")),
+                                Executor.Mode.valueOf(((NbtCompound) value).getString("Mode")),
+                                ((NbtCompound) value).getString("Command")
+                        )
+                );
+
                 default -> null;
             };
         } catch (Exception e) {

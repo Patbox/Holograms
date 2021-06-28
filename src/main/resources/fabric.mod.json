@@ -14,7 +14,6 @@
   },
 
   "license": "LGPLv3",
-  "icon": "assets/holograms/icon.png",
 
   "environment": "*",
   "entrypoints": {
@@ -30,6 +29,7 @@
     "fabricloader": ">=0.11.3",
     "fabric": "*",
     "minecraft": "1.17.x",
+    "hologram-api": ">=0.1.1",
     "java": ">=16"
   }
 }

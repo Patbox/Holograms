@@ -7,10 +7,13 @@ It also supports usage of placeholders from [Placeholder API](https://github.com
 
 If you have any questions, you can ask them on my [Discord](https://pb4.eu/discord)
 
+You can download it from [Modrinth](https://modrinth.com/mod/holograms/versions) or [CurseForge](https://www.curseforge.com/minecraft/mc-mods/server-holograms).
+
 ![Example image 2](https://i.imgur.com/7VacPE7.gif)
 
 ## Commands
 You need to have `holograms.admin` and `holograms.main` permissions to use these commands.
+Additionally, you need `holograms.executable` if you want to add commands to them.
 
 * `/holograms` - Displays mod's version,
 * `/holograms create <id>` - Creates new hologram,
