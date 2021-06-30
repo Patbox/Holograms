@@ -2,6 +2,7 @@ package eu.pb4.holograms.mod.hologram;
 
 
 import eu.pb4.holograms.api.holograms.AbstractHologram;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
@@ -9,10 +10,13 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,8 +24,10 @@ public class StoredHologram extends AbstractHologram {
     protected String name;
     protected UUID uuid;
     protected List<StoredElement<?>> storedElements = new ArrayList<>();
-    private int updateRate;
+    protected int updateRate;
     protected HologramManager manager = null;
+    protected String permission = "";
+    protected int operator;
 
     public StoredHologram(ServerWorld world, Vec3d position, VerticalAlign alignment) {
         super(world, position, alignment);
@@ -95,6 +101,10 @@ public class StoredHologram extends AbstractHologram {
 
     public Vec3d getPosition() {
         return this.position;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getName() {

@@ -17,6 +17,10 @@ import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
 
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.function.Function;
+
 public abstract class StoredElement<T> {
     public static final class Text extends StoredElement<String> {
         public Text(String value, boolean isStatic) {
@@ -50,8 +54,8 @@ public abstract class StoredElement<T> {
     }
 
     public static final class Entity extends StoredElement<net.minecraft.entity.Entity> {
-        public Entity(net.minecraft.entity.Entity value) {
-            super(value, false);
+        public Entity(net.minecraft.entity.Entity value, boolean isStatic) {
+            super(value, isStatic);
         }
 
         @Override
@@ -70,7 +74,7 @@ public abstract class StoredElement<T> {
 
         @Override
         public HologramElement toElement() {
-            return new EntityHologramElement(this.value);
+            return isStatic ? new EntityHologramElement(this.value) : new MovingEntityHologramElement(this.value);
         }
 
         @Override
@@ -128,6 +132,79 @@ public abstract class StoredElement<T> {
         @Override
         public net.minecraft.text.Text toText() {
             return new TranslatableText("text.holograms.space_height", this.value).formatted(Formatting.GRAY, Formatting.ITALIC);
+        }
+    }
+
+    public static final class Executor extends StoredElement<Executor.Value> {
+        public Executor(Value value) {
+            super(value, false);
+        }
+
+        @Override
+        public String getType() {
+            return "Executor";
+        }
+
+        @Override
+        protected NbtElement valueAsNbt() {
+            NbtCompound compound = new NbtCompound();
+            compound.putString("Command", this.value.command);
+            compound.putString("Hitbox", this.value.hitbox.name());
+            compound.putString("Mode", this.value.mode.name());
+
+            return compound;
+        }
+
+        @Override
+        public HologramElement toElement() {
+            return this.value.hitbox.type == EntityType.SLIME ? new CubeExecutorHologramElement(this.value) : new GeneralExecutorHologramElement(this.value);
+        }
+
+        @Override
+        public net.minecraft.text.Text toText() {
+            return new TranslatableText("text.holograms.executor_name")
+                    .setStyle(Style.EMPTY.withColor(Formatting.GRAY)
+                            .withItalic(true).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText("text.holograms.executor_hover",
+                                    new LiteralText(this.value.hitbox.toString().toLowerCase(Locale.ROOT)).formatted(Formatting.RED),
+                                    new LiteralText(this.value.mode.toString().toLowerCase(Locale.ROOT)).formatted(Formatting.GOLD),
+                                new LiteralText(this.value.command).formatted(Formatting.WHITE)).formatted(Formatting.YELLOW)
+                            )));
+        }
+
+        public record Value(Hitbox hitbox, Mode mode, String command) {};
+
+        public enum Hitbox {
+            SLIME_SMALL(EntityType.SLIME, 0),
+            SLIME_NORMAL(EntityType.SLIME, 1),
+            SLIME_BIG(EntityType.SLIME, 2),
+            CHICKEN(EntityType.CHICKEN, 0),
+            ZOMBIE(EntityType.ZOMBIE, 0),
+            PIG(EntityType.PIG, 0),
+            GIANT(EntityType.CHICKEN, 0);
+
+            public final EntityType<?> type;
+            public final int size;
+
+            Hitbox(EntityType<?> type, int size) {
+                this.type = type;
+                this.size = size;
+            }
+        }
+
+        public enum Mode {
+            PLAYER(p -> p.getCommandSource()),
+            PLAYER_SILENT(p -> p.getCommandSource().withSilent()),
+            PLAYER_AS_OP(p -> p.getCommandSource().withLevel(4)),
+            PLAYER_AS_OP_SILENT(p -> p.getCommandSource().withLevel(4).withSilent()),
+            CONSOLE(p -> p.getServer().getCommandSource()),
+            CONSOLE_SILENT(p -> p.getServer().getCommandSource().withSilent());
+
+
+            public final Function<ServerPlayerEntity, ServerCommandSource> toSource;
+
+            Mode(Function<ServerPlayerEntity, ServerCommandSource> fun) {
+                this.toSource = fun;
+            }
         }
     }
 

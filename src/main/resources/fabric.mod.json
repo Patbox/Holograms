@@ -14,7 +14,6 @@
   },
 
   "license": "LGPLv3",
-  "icon": "assets/holograms/icon.png",
 
   "environment": "*",
   "entrypoints": {
