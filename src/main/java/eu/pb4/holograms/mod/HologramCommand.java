@@ -152,6 +152,10 @@ public class HologramCommand {
                         argument("text", StringArgumentType.greedyString())
                                 .executes(ctx -> callback.modify(ctx,
                                         new StoredElement.Text(ctx.getArgument("text", String.class), true)))
+                )).then(literal("text-long").then(
+                        argument("text", StringArgumentType.greedyString())
+                                .executes(ctx -> callback.modify(ctx,
+                                        new StoredElement.Text(ctx.getArgument("text", String.class), false)))
                 )).then(literal("space").then(
                         argument("size", DoubleArgumentType.doubleArg(0))
                                 .executes(ctx -> callback.modify(ctx,

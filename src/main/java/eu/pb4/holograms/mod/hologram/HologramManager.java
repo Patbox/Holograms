@@ -1,6 +1,7 @@
 package eu.pb4.holograms.mod.hologram;
 
 import eu.pb4.holograms.interfaces.HologramHolder;
+import eu.pb4.holograms.utils.HologramHelper;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -47,12 +48,8 @@ public class HologramManager extends PersistentState {
             this.hologramsByName.put(hologram.name, hologram);
             hologram.manager = this;
 
-            if (this.world.getChunkManager().isChunkLoaded(chunkPos.x, chunkPos.z)) {
-                ((HologramHolder) this.world.getChunkManager().getWorldChunk(chunkPos.x, chunkPos.z, false)).addHologram(hologram);
-                this.world.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(chunkPos, false)
-                        .forEach( player -> hologram.addPlayer(player));
-                hologram.show();
-            }
+            hologram.show();
+
             this.setDirty(true);
             return true;
         }
@@ -73,12 +70,8 @@ public class HologramManager extends PersistentState {
 
             hologram.manager = null;
 
-            if (this.world.getChunkManager().isChunkLoaded(chunkPos.x, chunkPos.z)) {
-                ((HologramHolder) this.world.getChunkManager().getWorldChunk(chunkPos.x, chunkPos.z, false)).removeHologram(hologram);
-                this.world.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(chunkPos, false)
-                        .forEach( player -> hologram.removePlayer(player));
-                hologram.hide();
-            }
+            hologram.hide();
+
             this.setDirty(true);
             return true;
         }
@@ -102,11 +95,8 @@ public class HologramManager extends PersistentState {
     }
 
     public void moveHologram(StoredHologram hologram, Vec3d vec3d) {
-        hologram.hide();
-        for (ServerPlayerEntity player : new HashSet<>(hologram.getPlayerSet())) {
-            hologram.removePlayer(player);
-        }
         Vec3d oldPos = hologram.getPosition();
+
         ChunkPos oldChunkPos = new ChunkPos(new BlockPos(oldPos.x, oldPos.y, oldPos.z));
         ChunkPos chunkPos = new ChunkPos(new BlockPos(vec3d.x, vec3d.y, vec3d.z));
         hologram.setPosition(vec3d);
@@ -119,13 +109,6 @@ public class HologramManager extends PersistentState {
             }
 
             this.hologramsByChunk.computeIfAbsent(chunkPos, (chunkPos1) -> new ArrayList<>()).add(hologram);
-        }
-
-        if (this.world.getChunkManager().isChunkLoaded(chunkPos.x, chunkPos.z)) {
-            ((HologramHolder) this.world.getChunkManager().getWorldChunk(chunkPos.x, chunkPos.z, false)).addHologram(hologram);
-            this.world.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(chunkPos, false)
-                    .forEach( player -> hologram.addPlayer(player));
-            hologram.show();
         }
 
         this.markDirty();

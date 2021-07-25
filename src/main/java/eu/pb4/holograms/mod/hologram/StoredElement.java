@@ -8,6 +8,7 @@ import eu.pb4.holograms.api.elements.text.AbstractTextHologramElement;
 import eu.pb4.placeholders.PlaceholderAPI;
 import eu.pb4.placeholders.TextParser;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtDouble;
@@ -68,10 +69,8 @@ public abstract class StoredElement<T> {
         @Override
         protected NbtElement valueAsNbt() {
             NbtCompound compound = new NbtCompound();
-            if (this.value.saveSelfNbt(compound)) {
-                return this.value.writeNbt(compound);
-            }
-            return null;
+            compound.putString("id", EntityType.getId(this.value.getType()).toString());
+            return this.value.writeNbt(compound);
         }
 
         @Override

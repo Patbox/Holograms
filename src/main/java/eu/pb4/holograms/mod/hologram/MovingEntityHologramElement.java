@@ -18,7 +18,7 @@ public class MovingEntityHologramElement extends EntityHologramElement {
     @Override
     public void createSpawnPackets(ServerPlayerEntity player, AbstractHologram hologram) {
         super.createSpawnPackets(player, hologram);
-        Vec3d target = player.getPos();
+        Vec3d target = player.getEyePos();
         Vec3d vec3d = EntityAnchorArgumentType.EntityAnchor.EYES.positionAt(this.entity);
         double d = target.x - vec3d.x;
         double e = target.y - vec3d.y;
@@ -33,7 +33,7 @@ public class MovingEntityHologramElement extends EntityHologramElement {
     @Override
     public void onTick(AbstractHologram hologram) {
         for (ServerPlayerEntity player : hologram.getPlayerSet()) {
-            Vec3d target = player.getPos();
+            Vec3d target = player.getEyePos();
             Vec3d vec3d = EntityAnchorArgumentType.EntityAnchor.EYES.positionAt(this.entity);
             double d = target.x - vec3d.x;
             double e = target.y - vec3d.y;

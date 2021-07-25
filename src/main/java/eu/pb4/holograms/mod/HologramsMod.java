@@ -19,14 +19,5 @@ public class HologramsMod implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		HologramCommand.register();
-		ServerChunkEvents.CHUNK_LOAD.register(((world, chunk) -> {
-			List<StoredHologram> holograms = ((HoloServerWorld) world).getHologramManager().hologramsByChunk.get(chunk.getPos());
-			if (holograms != null) {
-				for (StoredHologram hologram : holograms) {
-					hologram.show();
-					((HologramHolder) chunk).addHologram(hologram);
-				}
-			}
-		}));
 	}
 }

@@ -1,7 +1,7 @@
 package eu.pb4.holograms.mod.hologram;
 
 
-import eu.pb4.holograms.api.holograms.AbstractHologram;
+import eu.pb4.holograms.api.holograms.WorldHologram;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
@@ -11,8 +11,6 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
@@ -21,7 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
-public class StoredHologram extends AbstractHologram {
+public class StoredHologram extends WorldHologram {
     protected String name;
     protected UUID uuid;
     protected List<StoredElement<?>> storedElements = new ArrayList<>();
@@ -127,10 +125,6 @@ public class StoredHologram extends AbstractHologram {
         return this.updateRate;
     }
 
-    public void setPosition(Vec3d vec3d) {
-        this.position = vec3d;
-    }
-
     public void setPermissions(String permission, int operator) {
         this.permission = permission;
         this.operator = operator;
@@ -140,8 +134,9 @@ public class StoredHologram extends AbstractHologram {
                 this.removePlayer(player);
             }
         }
-        this.world.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(new ChunkPos(new BlockPos(this.position.x, this.position.y, this.position.z)), false)
-                .forEach(player -> this.addPlayer(player));
+
+        this.hide();
+        this.show();
     }
 
     @Override

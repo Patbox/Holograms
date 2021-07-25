@@ -6,7 +6,7 @@
   "name": "Holograms",
   "description": "Server side holograms!",
   "authors": [
-    "Me!"
+    "Patbox"
   ],
   "contact": {
     "homepage": "https://pb4.eu",
@@ -28,8 +28,8 @@
   "depends": {
     "fabricloader": ">=0.11.3",
     "fabric": "*",
-    "minecraft": "1.17.x",
-    "hologram-api": ">=0.1.1",
+    "minecraft": ">=1.17.1",
+    "hologram-api": ">=0.2.0-rc.1",
     "java": ">=16"
   }
 }

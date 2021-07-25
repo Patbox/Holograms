@@ -4,7 +4,6 @@
   "package": "eu.pb4.holograms.mod.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
-    "ServerPlayerEntityMixin",
     "ServerWorldMixin"
   ],
   "client": [
