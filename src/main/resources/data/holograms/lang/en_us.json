@@ -19,6 +19,10 @@
   "text.holograms.info_update_rate": "Update rate: %s",
 
   "text.holograms.space_height": "[Space: %s blocks]",
+  "text.holograms.particle": "[Particle: %s type, %s rate, %s pos, %s delta, %s speed, %s]",
+  "text.holograms.particle.normal": "[Particle: %s type, %s rate, %s pos, %s delta, %s speed, %s count, %s]",
+  "text.holograms.particle.forced": "Normal",
+  "text.holograms.particle.forced": "Forced",
   "text.holograms.executor_name": "[Executor]",
   "text.holograms.executor_hover": "Hitbox: %s\nMode: %s\nCommand: %s",
 

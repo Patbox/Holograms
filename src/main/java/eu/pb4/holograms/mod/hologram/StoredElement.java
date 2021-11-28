@@ -1,5 +1,6 @@
 package eu.pb4.holograms.mod.hologram;
 
+import com.mojang.brigadier.StringReader;
 import eu.pb4.holograms.api.elements.HologramElement;
 import eu.pb4.holograms.api.elements.SpacingHologramElement;
 import eu.pb4.holograms.api.elements.clickable.EntityHologramElement;
@@ -7,20 +8,26 @@ import eu.pb4.holograms.api.elements.item.AbstractItemHologramElement;
 import eu.pb4.holograms.api.elements.text.AbstractTextHologramElement;
 import eu.pb4.placeholders.PlaceholderAPI;
 import eu.pb4.placeholders.TextParser;
+import net.minecraft.command.argument.ParticleEffectArgumentType;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtDouble;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.nbt.visitor.StringNbtWriter;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.function.Function;
 
@@ -45,14 +52,19 @@ public abstract class StoredElement<T> {
             net.minecraft.text.Text text = TextParser.parse(this.value);
             return (PlaceholderAPI.PLACEHOLDER_PATTERN.matcher(this.value).find())
                     ? this.isStatic
-                        ? new PlaceholderStaticTextHologramElement(text)
-                        : new PlaceholderMovingTextHologramElement(text)
+                    ? new PlaceholderStaticTextHologramElement(text)
+                    : new PlaceholderMovingTextHologramElement(text)
                     : AbstractTextHologramElement.create(TextParser.parse(this.value), this.isStatic);
         }
 
         @Override
         public net.minecraft.text.Text toText() {
             return ((MutableText) TextParser.parse(this.value)).fillStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(this.value))));
+        }
+
+        @Override
+        public String toArgs() {
+            return (this.isStatic ? "text" : "long-text") + " " + this.value;
         }
     }
 
@@ -82,6 +94,11 @@ public abstract class StoredElement<T> {
         public net.minecraft.text.Text toText() {
             return this.value.getDisplayName();
         }
+
+        @Override
+        public String toArgs() {
+            return null;
+        }
     }
 
     public static final class Item extends StoredElement<ItemStack> {
@@ -108,6 +125,16 @@ public abstract class StoredElement<T> {
         public net.minecraft.text.Text toText() {
             return this.value.toHoverableText();
         }
+
+        @Override
+        public String toArgs() {
+            var nbt = "";
+
+            if (this.value.getNbt() != null) {
+                nbt = new StringNbtWriter().apply(this.value.getNbt());
+            }
+            return "item nbt " + Registry.ITEM.getId(this.value.getItem()) + nbt + " " + this.isStatic;
+        }
     }
 
     public static final class Space extends StoredElement<Double> {
@@ -133,6 +160,11 @@ public abstract class StoredElement<T> {
         @Override
         public net.minecraft.text.Text toText() {
             return new TranslatableText("text.holograms.space_height", this.value).formatted(Formatting.GRAY, Formatting.ITALIC);
+        }
+
+        @Override
+        public String toArgs() {
+            return "space " + this.value.toString();
         }
     }
 
@@ -168,11 +200,17 @@ public abstract class StoredElement<T> {
                             .withItalic(true).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText("text.holograms.executor_hover",
                                     new LiteralText(this.value.hitbox.toString().toLowerCase(Locale.ROOT)).formatted(Formatting.RED),
                                     new LiteralText(this.value.mode.toString().toLowerCase(Locale.ROOT)).formatted(Formatting.GOLD),
-                                new LiteralText(this.value.command).formatted(Formatting.WHITE)).formatted(Formatting.YELLOW)
+                                    new LiteralText(this.value.command).formatted(Formatting.WHITE)).formatted(Formatting.YELLOW)
                             )));
         }
 
-        public record Value(Hitbox hitbox, Mode mode, String command) {};
+        @Override
+        public String toArgs() {
+            return "execute " + this.value.hitbox.name().toLowerCase(Locale.ROOT) + " " + this.value.mode.name().toLowerCase(Locale.ROOT) + " " + this.value.command;
+        }
+
+        public record Value(Hitbox hitbox, Mode mode, String command) {
+        }
 
         public enum Hitbox {
             SLIME_SMALL(EntityType.SLIME, 0),
@@ -193,7 +231,7 @@ public abstract class StoredElement<T> {
         }
 
         public enum Mode {
-            PLAYER(p -> p.getCommandSource()),
+            PLAYER(net.minecraft.entity.Entity::getCommandSource),
             PLAYER_SILENT(p -> p.getCommandSource().withSilent()),
             PLAYER_AS_OP(p -> p.getCommandSource().withLevel(4)),
             PLAYER_AS_OP_SILENT(p -> p.getCommandSource().withLevel(4).withSilent()),
@@ -209,13 +247,98 @@ public abstract class StoredElement<T> {
         }
     }
 
+    public static final class ParticleEmitter extends StoredElement<ParticleEmitter.Value> {
+        public ParticleEmitter(Value value) {
+            super(value, false);
+        }
+
+        @Override
+        public String getType() {
+            return "ParticleEmitter";
+        }
+
+        @Override
+        protected NbtElement valueAsNbt() {
+            return this.value.toNbt();
+        }
+
+        @Override
+        public HologramElement toElement() {
+            return new ParticleEmitterPlaceholderElement(this.value);
+        }
+
+        @Override
+        public net.minecraft.text.Text toText() {
+            return new TranslatableText("text.holograms.particle",
+                    this.value.parameters.asString(),
+                    this.value.rate,
+                    String.format("%.2f %.2f %.2f", this.value.pos.x, this.value.pos.y, this.value.pos.z),
+                    String.format("%.2f %.2f %.2f", this.value.delta.getX(), this.value.delta.getY(), this.value.delta.getZ()),
+                    String.format("%.2f", this.value.speed),
+                    this.value.count,
+                    new TranslatableText("text.holograms.particle." + (this.value.force ? "force" : "normal"))
+            ).formatted(Formatting.GRAY, Formatting.ITALIC);
+        }
+
+        @Override
+        public @Nullable String toArgs() {
+            return "particle " + this.value.parameters.asString() + " " + this.value.rate + " " + this.value.pos.x + " " + this.value.pos.y
+                    + " " + this.value.pos.z + " " + this.value.delta.getX() + " " + this.value.delta.getY() + " " + this.value.delta.getZ()
+                    + " " + this.value.speed + " " + this.value.count + " " + (this.value.force ? "force" : "normal");
+        }
+
+        public record Value(
+                ParticleEffect parameters,
+                Vec3d pos,
+                Vec3f delta,
+                float speed,
+                int count,
+                boolean force,
+                int rate
+        ) {
+            NbtCompound toNbt() {
+                var nbt = new NbtCompound();
+                nbt.putString("Type", parameters.asString());
+                nbt.putDouble("PosX", pos.x);
+                nbt.putDouble("PosY", pos.y);
+                nbt.putDouble("PosZ", pos.z);
+                nbt.putFloat("DeltaX", delta.getX());
+                nbt.putFloat("DeltaY", delta.getY());
+                nbt.putFloat("DeltaZ", delta.getZ());
+                nbt.putFloat("Speed", speed);
+                nbt.putInt("Speed", count);
+                nbt.putBoolean("Force", force);
+                nbt.putInt("Rate", rate);
+                return nbt;
+            }
+
+            public static Value fromNbt(NbtCompound nbt) {
+                try {
+                    return new Value(
+                            ParticleEffectArgumentType.readParameters(new StringReader(nbt.getString("Type"))),
+                            new Vec3d(nbt.getDouble("PosX"), nbt.getDouble("PosY"), nbt.getDouble("PosZ")),
+                            new Vec3f(nbt.getFloat("DeltaX"), nbt.getFloat("DeltaY"), nbt.getFloat("DeltaZ")),
+                            nbt.getFloat("Speed"),
+                            nbt.getInt("Speed"),
+                            nbt.getBoolean("Force"),
+                            nbt.getInt("Rate")
+                    );
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return new Value(ParticleTypes.AMBIENT_ENTITY_EFFECT, Vec3d.ZERO, Vec3f.ZERO, 0f, 0, false, 0);
+                }
+            }
+        }
+
+    }
+
     public StoredElement(T value, boolean isStatic) {
         this.value = value;
         this.isStatic = isStatic;
     }
 
 
-    protected  T value;
+    protected T value;
     protected boolean isStatic;
 
     public abstract String getType();
@@ -244,6 +367,9 @@ public abstract class StoredElement<T> {
 
     public abstract net.minecraft.text.Text toText();
 
+    @Nullable
+    public abstract String toArgs();
+
     public StoredElement<?> copy(World world) {
         return StoredElement.fromNbt(this.toNbt(), world);
     }
@@ -265,7 +391,7 @@ public abstract class StoredElement<T> {
                                 ((NbtCompound) value).getString("Command")
                         )
                 );
-
+                case "ParticleEmitter" -> new ParticleEmitter(ParticleEmitter.Value.fromNbt((NbtCompound) value));
                 default -> null;
             };
         } catch (Exception e) {

@@ -1,9 +1,6 @@
 package eu.pb4.holograms.mod;
 
-import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.mojang.brigadier.arguments.DoubleArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.arguments.*;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -19,6 +16,7 @@ import net.minecraft.command.argument.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.particle.ParticleEffect;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -26,6 +24,7 @@ import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.registry.Registry;
 
 import java.util.List;
@@ -39,94 +38,94 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class HologramCommand {
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) ->
-            dispatcher.register(
-                    literal("holograms")
-                            .requires(Permissions.require("holograms.main", true))
-                            .executes(HologramCommand::about)
-                            .then(literal("create")
-                                    .requires(Permissions.require("holograms.admin", 2))
-                                    .then(argument("name", StringArgumentType.word())
-                                            .executes(HologramCommand::createHologram)
-                                            .then(argument("pos", Vec3ArgumentType.vec3(true))
-                                                    .executes(HologramCommand::createHologram)
-                                            )
-                                    )
-                            )
-                            .then(literal("remove")
-                                    .requires(Permissions.require("holograms.admin", 2))
-                                    .then(argument("name", StringArgumentType.word()).suggests(HologramCommand::hologramsSuggestion)
-                                            .executes(HologramCommand::removeHologram)
-                                    )
-                            )
-                            .then(literal("rename")
-                                    .requires(Permissions.require("holograms.admin", 2))
-                                    .then(argument("name", StringArgumentType.word()).suggests(HologramCommand::hologramsSuggestion)
-                                            .then(argument("new_name", StringArgumentType.word())
-                                                    .executes(HologramCommand::renameHologram)
-                                            )
-                                    )
-                            )
-                            .then(literal("teleportTo")
-                                    .requires(Permissions.require("holograms.admin", 2))
-                                    .then(argument("name", StringArgumentType.word()).suggests(HologramCommand::hologramsSuggestion)
-                                            .executes(HologramCommand::teleportToHologram)
-                                    )
-                            )
-                            .then(literal("modify")
-                                    .requires(Permissions.require("holograms.admin", 2))
-                                    .then(argument("name", StringArgumentType.word()).suggests(HologramCommand::hologramsSuggestion)
-                                            .then(literal("update-rate").then(
-                                                    argument("value", IntegerArgumentType.integer(1))
-                                                            .executes(HologramCommand::changeUpdateRate)
-                                                    )
-                                            )
-                                            .then(literal("position")
-                                                    .executes(HologramCommand::moveHologram)
-                                                    .then(argument("pos", Vec3ArgumentType.vec3(true))
-                                                            .executes(HologramCommand::moveHologram)
-                                                    )
-                                            )
-                                            .then(literal("permission")
-                                                    .then(literal("remove").executes(HologramCommand::removePermission))
-                                                    .then(literal("set")
-                                                            .then(argument("permission", StringArgumentType.word())
-                                                                    .executes(HologramCommand::setPermission)
-                                                                    .then(argument("op", IntegerArgumentType.integer(1, 4))
-                                                                            .executes(HologramCommand::setPermission)
-                                                                    )
-                                                            )
-                                                    )
-                                            )
-                                            .then(literal("lines")
-                                                    .then(literal("set").then(
-                                                            HologramCommand.modificationArgument(
-                                                                    argument("position", IntegerArgumentType.integer(0)),
-                                                                    HologramCommand::setElement
-                                                            )))
-                                                    .then(HologramCommand.modificationArgument(
-                                                            literal("add"),
-                                                            HologramCommand::addElement
-                                                    ))
-                                                    .then(literal("insert").then(
-                                                            HologramCommand.modificationArgument(
-                                                                    argument("position", IntegerArgumentType.integer(0)),
-                                                                    HologramCommand::insertElement
-                                                            )))
-                                                    .then(literal("remove").then(
-                                                            argument("position", IntegerArgumentType.integer(0))
-                                                                    .executes(HologramCommand::removeElement)
-                                                    ))
-                                            )
-                                    )
-                            )
+                dispatcher.register(
+                        literal("holograms")
+                                .requires(Permissions.require("holograms.main", true))
+                                .executes(HologramCommand::about)
+                                .then(literal("create")
+                                        .requires(Permissions.require("holograms.admin", 2))
+                                        .then(argument("name", StringArgumentType.word())
+                                                .executes(HologramCommand::createHologram)
+                                                .then(argument("pos", Vec3ArgumentType.vec3(true))
+                                                        .executes(HologramCommand::createHologram)
+                                                )
+                                        )
+                                )
+                                .then(literal("remove")
+                                        .requires(Permissions.require("holograms.admin", 2))
+                                        .then(argument("name", StringArgumentType.word()).suggests(HologramCommand::hologramsSuggestion)
+                                                .executes(HologramCommand::removeHologram)
+                                        )
+                                )
+                                .then(literal("rename")
+                                        .requires(Permissions.require("holograms.admin", 2))
+                                        .then(argument("name", StringArgumentType.word()).suggests(HologramCommand::hologramsSuggestion)
+                                                .then(argument("new_name", StringArgumentType.word())
+                                                        .executes(HologramCommand::renameHologram)
+                                                )
+                                        )
+                                )
+                                .then(literal("teleportTo")
+                                        .requires(Permissions.require("holograms.admin", 2))
+                                        .then(argument("name", StringArgumentType.word()).suggests(HologramCommand::hologramsSuggestion)
+                                                .executes(HologramCommand::teleportToHologram)
+                                        )
+                                )
+                                .then(literal("modify")
+                                        .requires(Permissions.require("holograms.admin", 2))
+                                        .then(argument("name", StringArgumentType.word()).suggests(HologramCommand::hologramsSuggestion)
+                                                .then(literal("update-rate").then(
+                                                        argument("value", IntegerArgumentType.integer(1))
+                                                                .executes(HologramCommand::changeUpdateRate)
+                                                        )
+                                                )
+                                                .then(literal("position")
+                                                        .executes(HologramCommand::moveHologram)
+                                                        .then(argument("pos", Vec3ArgumentType.vec3(true))
+                                                                .executes(HologramCommand::moveHologram)
+                                                        )
+                                                )
+                                                .then(literal("permission")
+                                                        .then(literal("remove").executes(HologramCommand::removePermission))
+                                                        .then(literal("set")
+                                                                .then(argument("permission", StringArgumentType.word())
+                                                                        .executes(HologramCommand::setPermission)
+                                                                        .then(argument("op", IntegerArgumentType.integer(1, 4))
+                                                                                .executes(HologramCommand::setPermission)
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                                .then(literal("lines")
+                                                        .then(literal("set").then(
+                                                                HologramCommand.modificationArgument(
+                                                                        argument("position", IntegerArgumentType.integer(0)),
+                                                                        HologramCommand::setElement
+                                                                )))
+                                                        .then(HologramCommand.modificationArgument(
+                                                                literal("add"),
+                                                                HologramCommand::addElement
+                                                        ))
+                                                        .then(literal("insert").then(
+                                                                HologramCommand.modificationArgument(
+                                                                        argument("position", IntegerArgumentType.integer(0)),
+                                                                        HologramCommand::insertElement
+                                                                )))
+                                                        .then(literal("remove").then(
+                                                                argument("position", IntegerArgumentType.integer(0))
+                                                                        .executes(HologramCommand::removeElement)
+                                                        ))
+                                                )
+                                        )
+                                )
 
-                            .then(literal("info")
-                                    .requires(Permissions.require("holograms.admin", 2))
-                                    .then(argument("name", StringArgumentType.word()).suggests(HologramCommand::hologramsSuggestion)
-                                            .executes(HologramCommand::infoHologram)
-                                    )
-                            )
-            )
+                                .then(literal("info")
+                                        .requires(Permissions.require("holograms.admin", 2))
+                                        .then(argument("name", StringArgumentType.word()).suggests(HologramCommand::hologramsSuggestion)
+                                                .executes(HologramCommand::infoHologram)
+                                        )
+                                )
+                )
         );
     }
 
@@ -163,55 +162,55 @@ public class HologramCommand {
                 )).then(literal("execute")
                         .requires(Permissions.require("holograms.executable", 4))
                         .then(
-                        argument("hitbox", StringArgumentType.word())
-                                .suggests(HologramCommand::hitboxSuggestion)
-                                .then(argument("mode", StringArgumentType.word())
-                                        .suggests(HologramCommand::modeSuggestion)
-                                        .then(argument("command", StringArgumentType.greedyString())
-                                                .executes(ctx -> {
-                                                    String hitboxS = ctx.getArgument("hitbox", String.class);
-                                                    try {
-                                                        StoredElement.Executor.Hitbox hitbox = StoredElement.Executor.Hitbox.valueOf(hitboxS.toUpperCase(Locale.ROOT));
-                                                        String modeS = ctx.getArgument("mode", String.class);
-                                                        try {
-                                                            StoredElement.Executor.Mode mode = StoredElement.Executor.Mode.valueOf(modeS.toUpperCase(Locale.ROOT));
-                                                            return callback.modify(ctx,
-                                                                    new StoredElement.Executor(new StoredElement.Executor.Value(hitbox, mode, ctx.getArgument("command", String.class))));
-                                                        } catch (Exception e) {
-                                                            ctx.getSource().sendFeedback(new TranslatableText("text.holograms.invalid_mode", new LiteralText(modeS).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
-                                                            return 0;
-                                                        }
-                                                    } catch (Exception e) {
-                                                        ctx.getSource().sendFeedback(new TranslatableText("text.holograms.invalid_hitbox", new LiteralText(hitboxS).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
-                                                        return 0;
-                                                    }
-                                                })
+                                argument("hitbox", StringArgumentType.word())
+                                        .suggests(HologramCommand::hitboxSuggestion)
+                                        .then(argument("mode", StringArgumentType.word())
+                                                .suggests(HologramCommand::modeSuggestion)
+                                                .then(argument("command", StringArgumentType.greedyString())
+                                                        .executes(ctx -> {
+                                                            String hitboxS = ctx.getArgument("hitbox", String.class);
+                                                            try {
+                                                                StoredElement.Executor.Hitbox hitbox = StoredElement.Executor.Hitbox.valueOf(hitboxS.toUpperCase(Locale.ROOT));
+                                                                String modeS = ctx.getArgument("mode", String.class);
+                                                                try {
+                                                                    StoredElement.Executor.Mode mode = StoredElement.Executor.Mode.valueOf(modeS.toUpperCase(Locale.ROOT));
+                                                                    return callback.modify(ctx,
+                                                                            new StoredElement.Executor(new StoredElement.Executor.Value(hitbox, mode, ctx.getArgument("command", String.class))));
+                                                                } catch (Exception e) {
+                                                                    ctx.getSource().sendFeedback(new TranslatableText("text.holograms.invalid_mode", new LiteralText(modeS).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+                                                                    return 0;
+                                                                }
+                                                            } catch (Exception e) {
+                                                                ctx.getSource().sendFeedback(new TranslatableText("text.holograms.invalid_hitbox", new LiteralText(hitboxS).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+                                                                return 0;
+                                                            }
+                                                        })
+                                                )
                                         )
-                                )
-
-                )).then(literal("copy").then(
+                        )).then(literal("copy").then(
                         argument("base", IntegerArgumentType.integer(0))
                                 .executes(ctx -> {
-                                    ServerWorld world = ctx.getSource().getWorld();
-                                    HologramManager manager = ((HoloServerWorld) world).getHologramManager();
-                                    String name = ctx.getArgument("name", String.class);
+                                            ServerWorld world = ctx.getSource().getWorld();
+                                            HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+                                            String name = ctx.getArgument("name", String.class);
 
-                                    if (!manager.hologramsByName.containsKey(name)) {
-                                        ctx.getSource().sendFeedback(new TranslatableText("text.holograms.invalid_hologram", new LiteralText(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
-                                        return 0;
-                                    } else {
-                                        List<StoredElement<?>> elements = manager.hologramsByName.get(name).getStoredElements();
-                                        int baseLine = ctx.getArgument("base", Integer.class);
+                                            if (!manager.hologramsByName.containsKey(name)) {
+                                                ctx.getSource().sendFeedback(new TranslatableText("text.holograms.invalid_hologram", new LiteralText(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+                                                return 0;
+                                            } else {
+                                                List<StoredElement<?>> elements = manager.hologramsByName.get(name).getStoredElements();
+                                                int baseLine = ctx.getArgument("base", Integer.class);
 
-                                        if (elements.size() - 1 < baseLine) {
-                                            ctx.getSource().sendFeedback(new TranslatableText("text.holograms.non_existing_line", new LiteralText(name).formatted(Formatting.GOLD), baseLine).formatted(Formatting.RED), false);
-                                            return 0;
+                                                if (elements.size() - 1 < baseLine) {
+                                                    ctx.getSource().sendFeedback(new TranslatableText("text.holograms.non_existing_line", new LiteralText(name).formatted(Formatting.GOLD), baseLine).formatted(Formatting.RED), false);
+                                                    return 0;
+                                                }
+
+                                                return callback.modify(ctx, elements.get(baseLine).copy(ctx.getSource().getWorld()));
+                                            }
                                         }
-
-                                        return callback.modify(ctx, elements.get(baseLine).copy(ctx.getSource().getWorld()));
-                                    }
-                                }
-                ))).then(literal("entity").then(
+                                )
+                )).then(literal("entity").then(
                         argument("entity", EntitySummonArgumentType.entitySummon())
                                 .executes(ctx -> callback.modify(ctx,
                                         new StoredElement.Entity(
@@ -240,8 +239,54 @@ public class HologramCommand {
                                 )
 
                         )
-                        )
-                );
+                )).then(literal("particle").then(
+                        argument("particle", ParticleEffectArgumentType.particleEffect())
+                                .executes((ctx) -> createParticle(ctx, callback, ParticleEffectArgumentType.getParticle(ctx, "particle"),
+                                        20, Vec3d.ZERO, Vec3d.ZERO, 0.0F, 0, false))
+                                .then(argument("updateRate", IntegerArgumentType.integer(1))
+                                        .executes((ctx) -> createParticle(ctx, callback, ParticleEffectArgumentType.getParticle(ctx, "particle"),
+                                                IntegerArgumentType.getInteger(ctx, "updateRate"), Vec3ArgumentType.getVec3(ctx, "pos"),
+                                                Vec3d.ZERO, 0.0F, 0, false))
+                                        .then(argument("pos", Vec3ArgumentType.vec3())
+                                                .executes((ctx) -> createParticle(ctx, callback, ParticleEffectArgumentType.getParticle(ctx, "particle"),
+                                                        IntegerArgumentType.getInteger(ctx, "updateRate"), Vec3ArgumentType.getVec3(ctx, "pos"),
+                                                        Vec3d.ZERO, 0.0F, 0, false))
+
+                                                .then(argument("delta", Vec3ArgumentType.vec3(false)).then(argument("speed", FloatArgumentType.floatArg(0.0F))
+                                                        .then((argument("count", IntegerArgumentType.integer(0))
+                                                                .executes((ctx) -> createParticle(ctx, callback, ParticleEffectArgumentType.getParticle(ctx, "particle"),
+                                                                        IntegerArgumentType.getInteger(ctx, "updateRate"), Vec3ArgumentType.getVec3(ctx, "pos"),
+                                                                        Vec3ArgumentType.getVec3(ctx, "delta"), FloatArgumentType.getFloat(ctx, "speed"),
+                                                                        IntegerArgumentType.getInteger(ctx, "count"), false)))
+
+                                                                .then(literal("force")
+                                                                        .executes((ctx) -> createParticle(ctx, callback, ParticleEffectArgumentType.getParticle(ctx, "particle"),
+                                                                                IntegerArgumentType.getInteger(ctx, "updateRate"),
+                                                                                Vec3ArgumentType.getVec3(ctx, "pos"), Vec3ArgumentType.getVec3(ctx, "delta"),
+                                                                                FloatArgumentType.getFloat(ctx, "speed"),
+                                                                                IntegerArgumentType.getInteger(ctx, "count"), true)))
+                                                                .then(literal("normal")
+                                                                        .executes((ctx) -> createParticle(ctx, callback, ParticleEffectArgumentType.getParticle(ctx, "particle"),
+                                                                                IntegerArgumentType.getInteger(ctx, "updateRate"),
+                                                                                Vec3ArgumentType.getVec3(ctx, "pos"), Vec3ArgumentType.getVec3(ctx, "delta"),
+                                                                                FloatArgumentType.getFloat(ctx, "speed"),
+                                                                                IntegerArgumentType.getInteger(ctx, "count"), false)))
+                                                        ))
+                                                ))
+                                )
+                ));
+    }
+
+    private static int createParticle(CommandContext<ServerCommandSource> context, ModificationCallback callback, ParticleEffect particle, int rate, Vec3d pos, Vec3d delta, float speed, int count, boolean force) {
+        return callback.modify(context, new StoredElement.ParticleEmitter(new StoredElement.ParticleEmitter.Value(
+                particle,
+                pos,
+                new Vec3f((float) delta.x, (float) delta.y, (float) delta.z),
+                speed,
+                count,
+                force,
+                rate
+        )));
     }
 
     private static int createHologram(CommandContext<ServerCommandSource> context) {
@@ -413,7 +458,8 @@ public class HologramCommand {
             context.getSource().sendFeedback(new TranslatableText("text.holograms.permission_removed",
                     new LiteralText(name).formatted(Formatting.GOLD)), false);
             return 1;
-        }    }
+        }
+    }
 
     private static int infoHologram(CommandContext<ServerCommandSource> context) {
         ServerWorld world = context.getSource().getWorld();
@@ -437,11 +483,13 @@ public class HologramCommand {
 
             int x = 0;
             for (StoredElement<?> element : hologram.getStoredElements()) {
+                var arg = element.toArgs();
+
                 MutableText text1 = new LiteralText("")
                         .append(
                                 new TranslatableText("[%s] ", new LiteralText("" + x).formatted(Formatting.WHITE))
                                         .setStyle(Style.EMPTY
-                                                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/holograms modify " + hologram.getName() + " lines set " + x))
+                                                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/holograms modify " + hologram.getName() + " lines set " + x + " " + (arg != null ? arg : "")))
                                                 .withColor(Formatting.DARK_GRAY)
                                         )
                         )
