@@ -2,10 +2,12 @@ package eu.pb4.holograms.mod.hologram;
 
 import eu.pb4.holograms.api.elements.text.StaticTextHologramElement;
 import eu.pb4.holograms.api.holograms.AbstractHologram;
+import eu.pb4.holograms.impl.HologramHelper;
 import eu.pb4.holograms.mixin.accessors.EntityAccessor;
 import eu.pb4.holograms.mixin.accessors.EntityTrackerUpdateS2CPacketAccessor;
-import eu.pb4.holograms.utils.PacketHelpers;
-import eu.pb4.placeholders.PlaceholderAPI;
+import eu.pb4.placeholders.api.PlaceholderContext;
+import eu.pb4.placeholders.api.Placeholders;
+import eu.pb4.placeholders.api.node.TextNode;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -14,16 +16,19 @@ import net.minecraft.text.Text;
 import java.util.*;
 
 public class PlaceholderStaticTextHologramElement extends StaticTextHologramElement {
+    private final TextNode textNode;
     private HashMap<UUID, Text> cache = new HashMap<>();
     private Set<UUID> cleanup = new HashSet<>();
 
-    public PlaceholderStaticTextHologramElement(Text text) {
-        super(text);
+    public PlaceholderStaticTextHologramElement(TextNode text) {
+
+        super(Text.empty());
+        this.textNode = text;
     }
 
     @Override
     public Text getTextFor(ServerPlayerEntity player) {
-        return PlaceholderAPI.parseText(this.getText(), player);
+        return Placeholders.parseText(this.textNode, PlaceholderContext.of(player));
     }
 
     @Override
@@ -38,7 +43,7 @@ public class PlaceholderStaticTextHologramElement extends StaticTextHologramElem
                 Text text = this.cache.get(player.getUuid());
                 Text out = this.getTextFor(player);
                 if (!out.equals(text)) {
-                    EntityTrackerUpdateS2CPacket packet = PacketHelpers.createEntityTrackerUpdate();
+                    EntityTrackerUpdateS2CPacket packet = HologramHelper.createUnsafe(EntityTrackerUpdateS2CPacket.class);
                     EntityTrackerUpdateS2CPacketAccessor accessor = (EntityTrackerUpdateS2CPacketAccessor) packet;
                     accessor.setId(this.entityId);
                     List<DataTracker.Entry<?>> data = new ArrayList<>();

@@ -1,11 +1,8 @@
 package eu.pb4.holograms.mod.hologram;
 
-import eu.pb4.holograms.interfaces.HologramHolder;
-import eu.pb4.holograms.utils.HologramHelper;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;

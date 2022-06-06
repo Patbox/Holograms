@@ -6,8 +6,8 @@ import eu.pb4.holograms.api.elements.SpacingHologramElement;
 import eu.pb4.holograms.api.elements.clickable.EntityHologramElement;
 import eu.pb4.holograms.api.elements.item.AbstractItemHologramElement;
 import eu.pb4.holograms.api.elements.text.AbstractTextHologramElement;
-import eu.pb4.placeholders.PlaceholderAPI;
-import eu.pb4.placeholders.TextParser;
+import eu.pb4.placeholders.api.Placeholders;
+import eu.pb4.placeholders.api.TextParserUtils;
 import net.minecraft.command.argument.ParticleEffectArgumentType;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
@@ -49,17 +49,16 @@ public abstract class StoredElement<T> {
 
         @Override
         public HologramElement toElement() {
-            net.minecraft.text.Text text = TextParser.parse(this.value);
-            return (PlaceholderAPI.PLACEHOLDER_PATTERN.matcher(this.value).find())
+            return (Placeholders.PLACEHOLDER_PATTERN.matcher(this.value).find())
                     ? this.isStatic
-                    ? new PlaceholderStaticTextHologramElement(text)
-                    : new PlaceholderMovingTextHologramElement(text)
-                    : AbstractTextHologramElement.create(TextParser.parse(this.value), this.isStatic);
+                    ? new PlaceholderStaticTextHologramElement(TextParserUtils.formatNodes(this.value))
+                    : new PlaceholderMovingTextHologramElement(TextParserUtils.formatNodes(this.value))
+                    : AbstractTextHologramElement.create(TextParserUtils.formatText(this.value), this.isStatic);
         }
 
         @Override
         public net.minecraft.text.Text toText() {
-            return ((MutableText) TextParser.parse(this.value)).fillStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(this.value))));
+            return ((MutableText) TextParserUtils.formatText(this.value)).fillStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.literal(this.value))));
         }
 
         @Override
@@ -159,7 +158,7 @@ public abstract class StoredElement<T> {
 
         @Override
         public net.minecraft.text.Text toText() {
-            return new TranslatableText("text.holograms.space_height", this.value).formatted(Formatting.GRAY, Formatting.ITALIC);
+            return net.minecraft.text.Text.translatable("text.holograms.space_height", this.value).formatted(Formatting.GRAY, Formatting.ITALIC);
         }
 
         @Override
@@ -195,12 +194,12 @@ public abstract class StoredElement<T> {
 
         @Override
         public net.minecraft.text.Text toText() {
-            return new TranslatableText("text.holograms.executor_name")
+            return net.minecraft.text.Text.translatable("text.holograms.executor_name")
                     .setStyle(Style.EMPTY.withColor(Formatting.GRAY)
-                            .withItalic(true).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText("text.holograms.executor_hover",
-                                    new LiteralText(this.value.hitbox.toString().toLowerCase(Locale.ROOT)).formatted(Formatting.RED),
-                                    new LiteralText(this.value.mode.toString().toLowerCase(Locale.ROOT)).formatted(Formatting.GOLD),
-                                    new LiteralText(this.value.command).formatted(Formatting.WHITE)).formatted(Formatting.YELLOW)
+                            .withItalic(true).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.translatable("text.holograms.executor_hover",
+                                    net.minecraft.text.Text.literal(this.value.hitbox.toString().toLowerCase(Locale.ROOT)).formatted(Formatting.RED),
+                                    net.minecraft.text.Text.literal(this.value.mode.toString().toLowerCase(Locale.ROOT)).formatted(Formatting.GOLD),
+                                    net.minecraft.text.Text.literal(this.value.command).formatted(Formatting.WHITE)).formatted(Formatting.YELLOW)
                             )));
         }
 
@@ -269,14 +268,14 @@ public abstract class StoredElement<T> {
 
         @Override
         public net.minecraft.text.Text toText() {
-            return new TranslatableText("text.holograms.particle",
+            return net.minecraft.text.Text.translatable("text.holograms.particle",
                     this.value.parameters.asString(),
                     this.value.rate,
                     String.format("%.2f %.2f %.2f", this.value.pos.x, this.value.pos.y, this.value.pos.z),
                     String.format("%.2f %.2f %.2f", this.value.delta.getX(), this.value.delta.getY(), this.value.delta.getZ()),
                     String.format("%.2f", this.value.speed),
                     this.value.count,
-                    new TranslatableText("text.holograms.particle." + (this.value.force ? "force" : "normal"))
+                    net.minecraft.text.Text.translatable("text.holograms.particle." + (this.value.force ? "force" : "normal"))
             ).formatted(Formatting.GRAY, Formatting.ITALIC);
         }
 
