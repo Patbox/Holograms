@@ -18,6 +18,6 @@ public class CubeExecutorHologramElement extends CubeHitboxHologramElement {
 
     @Override
     public void onClick(AbstractHologram hologram, ServerPlayerEntity player, InteractionType type, @Nullable Hand hand, @Nullable Vec3d vec, int entityId) {
-        player.getServer().getCommandManager().execute(this.value.mode().toSource.apply(player), this.value.command());
+        player.getServer().getCommandManager().executeWithPrefix(this.value.mode().toSource.apply(player), this.value.command());
     }
 }
