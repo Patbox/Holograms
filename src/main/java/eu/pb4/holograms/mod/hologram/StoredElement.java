@@ -28,6 +28,8 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
+import javax.imageio.ImageIO;
+import java.net.URL;
 import java.util.Locale;
 import java.util.function.Function;
 
@@ -328,7 +330,72 @@ public abstract class StoredElement<T> {
                 }
             }
         }
+    }
 
+    public static final class Image extends StoredElement<Image.Value> {
+        public Image(Value value, boolean longDisntace) {
+            super(value, longDisntace);
+        }
+
+        @Override
+        public String getType() {
+            return "Image";
+        }
+
+        @Override
+        protected NbtElement valueAsNbt() {
+            var nbt = new NbtCompound();
+            nbt.putString("Image", this.value.path);
+            nbt.putInt("Height", this.value.height);
+            nbt.putBoolean("Smooth", this.value.smooth);
+            return nbt;
+        }
+
+        @Override
+        public HologramElement toElement() {
+            try {
+                var image = ImageIO.read(new URL(this.value.path));
+
+                return !this.isStatic ? new ImageShortDistanceHologramElement(image, this.value.height, this.value.smooth) : new ImageLongDistanceHologramElement(image, this.value.height, this.value.smooth);
+            } catch (Throwable t) {
+                t.printStackTrace();
+                return AbstractTextHologramElement.create(net.minecraft.text.Text.translatable("text.holograms.image_invalid", this.value.path).formatted(Formatting.RED), this.isStatic);
+            }
+        }
+
+        @Override
+        public net.minecraft.text.Text toText() {
+            return net.minecraft.text.Text.translatable("text.holograms.image_name", this.value.path)
+                    .setStyle(Style.EMPTY.withColor(Formatting.GRAY)
+                            .withItalic(true).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.translatable("text.holograms.image_hover",
+                                    net.minecraft.text.Text.literal(this.value.path).formatted(Formatting.RED),
+                                    net.minecraft.text.Text.literal("" + this.value.height).formatted(Formatting.GOLD),
+                                    net.minecraft.text.Text.literal("" + this.isStatic).formatted(Formatting.WHITE),
+                                    net.minecraft.text.Text.literal("" + this.value.smooth).formatted(Formatting.RED)
+                            ).formatted(Formatting.YELLOW)
+                            )));
+        }
+
+        @Override
+        public @Nullable String toArgs() {
+            return "image \"" + this.value.path + "\" " + this.value.height + " " + this.value.smooth + " " + this.isStatic;
+        }
+
+
+        public record Value(String path, int height, boolean smooth) {
+            public static Value fromNbt(NbtCompound nbt) {
+                try {
+                    return new Value(
+                            nbt.getString("Image"),
+                            nbt.getInt("Height"),
+                            nbt.getByte("Smooth") > 0
+                    );
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return new Value("", 1, false);
+                }
+            }
+        }
     }
 
     public StoredElement(T value, boolean isStatic) {
@@ -391,6 +458,7 @@ public abstract class StoredElement<T> {
                         )
                 );
                 case "ParticleEmitter" -> new ParticleEmitter(ParticleEmitter.Value.fromNbt((NbtCompound) value));
+                case "Image" -> new Image(Image.Value.fromNbt((NbtCompound) value), isStatic);
                 default -> null;
             };
         } catch (Exception e) {

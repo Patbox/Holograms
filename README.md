@@ -1,5 +1,5 @@
 # Holograms
-![Example image](https://i.imgur.com/UVkrydt.png)
+![Example image](https://i.imgur.com/aheOzOQ.png)
 It's a simple mod that allows to create of server side holograms with full support for formatting and items.
 Everything is created on packet level, which means commands or other mods shouldn't break them.
 [Formatting uses PlaceholderAPI's Text Parser for which docs you can find here](https://github.com/Patbox/FabricPlaceholderAPI/blob/1.17/TEXT_FORMATTING.md).
@@ -11,9 +11,21 @@ You can download it from [Modrinth](https://modrinth.com/mod/holograms/versions)
 
 ![Example image 2](https://i.imgur.com/7VacPE7.gif)
 
+## Supported line types:
+* text - Simple formatted text
+* text-long - Simple formatted text (visible on longer distance)
+* item - Displays item (either rotating or static)
+* entity - Displays entity
+* particle - Displays a particle
+* image - Displays an image
+* execute - Invisible, clickable element executing commands
+* space - Adds space between lines
+
 ## Commands
 You need to have `holograms.admin` and `holograms.main` permissions to use these commands.
 Additionally, you need `holograms.executable` if you want to add commands to them.
+
+You can also use `/holo` or `/hd` instead of `/holograms`
 
 * `/holograms` - Displays mod's version,
 * `/holograms create <id>` - Creates new hologram,

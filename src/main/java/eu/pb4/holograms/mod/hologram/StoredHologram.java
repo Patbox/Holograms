@@ -79,25 +79,6 @@ public class StoredHologram extends WorldHologram {
         return this.storedElements;
     }
 
-    public NbtCompound toNbt() {
-        NbtCompound nbt = new NbtCompound();
-        nbt.putString("name", this.name);
-        nbt.putDouble("x", this.position.x);
-        nbt.putDouble("y", this.position.y);
-        nbt.putDouble("z", this.position.z);
-        nbt.putUuid("uuid", this.uuid);
-        nbt.putInt("updateRate", Math.max(this.updateRate, 1));
-
-        NbtList list = new NbtList();
-
-        for (StoredElement<?> element : this.storedElements) {
-            list.add(element.toNbt());
-        }
-        nbt.put("elements", list);
-
-        return nbt;
-    }
-
     public Vec3d getPosition() {
         return this.position;
     }
@@ -119,6 +100,14 @@ public class StoredHologram extends WorldHologram {
             this.manager.markDirty();
         }
         this.updateRate = Math.max(value, 1);
+    }
+
+    @Override
+    public void setAlignment(VerticalAlign alignment) {
+        if (this.manager != null) {
+            this.manager.markDirty();
+        }
+        super.setAlignment(alignment);
     }
 
     public int getUpdateRate() {
@@ -144,8 +133,37 @@ public class StoredHologram extends WorldHologram {
         return this.operator == 0 || Permissions.check(player, this.permission, this.operator);
     }
 
+    public NbtCompound toNbt() {
+        NbtCompound nbt = new NbtCompound();
+        nbt.putString("name", this.name);
+        nbt.putDouble("x", this.position.x);
+        nbt.putDouble("y", this.position.y);
+        nbt.putDouble("z", this.position.z);
+        nbt.putUuid("uuid", this.uuid);
+        nbt.putInt("updateRate", Math.max(this.updateRate, 1));
+
+        NbtList list = new NbtList();
+
+        for (StoredElement<?> element : this.storedElements) {
+            list.add(element.toNbt());
+        }
+        nbt.put("elements", list);
+
+        nbt.putString("VerticalAlign", this.getAlignment().toString());
+
+        return nbt;
+    }
+
     public static StoredHologram fromNbt(NbtCompound tag, ServerWorld world) {
-        StoredHologram hologram = new StoredHologram(world, new Vec3d(tag.getDouble("x"), tag.getDouble("y"), tag.getDouble("z")), VerticalAlign.TOP);
+        VerticalAlign aligment;
+
+        try {
+            aligment = VerticalAlign.valueOf(tag.getString("VerticalAlign"));
+        } catch (Throwable t) {
+            aligment = VerticalAlign.TOP;
+        }
+
+        StoredHologram hologram = new StoredHologram(world, new Vec3d(tag.getDouble("x"), tag.getDouble("y"), tag.getDouble("z")), aligment);
         hologram.name = tag.getString("name");
         hologram.uuid = tag.getUuid("uuid");
         hologram.updateRate = Math.max(tag.getInt("updateRate"), 1);

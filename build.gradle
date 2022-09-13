@@ -34,9 +34,11 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	modImplementation include("fr.catcore:server-translations-api:1.4.14+1.19-rc2")
-	modImplementation include("eu.pb4:placeholder-api:2.0.0-beta.2+1.19")
+	modImplementation include("eu.pb4:placeholder-api:2.0.0-beta.7+1.19")
 	modImplementation include("eu.pb4:hologram-api:0.2.2+1.19")
 	modImplementation include("me.lucko:fabric-permissions-api:0.1-SNAPSHOT")
+	//modImplementation "org.jcodec:jcodec:0.2.5"
+	//modImplementation "org.jcodec:jcodec-javase:0.2.5"
 
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
