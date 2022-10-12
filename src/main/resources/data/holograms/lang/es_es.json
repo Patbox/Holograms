@@ -1,0 +1,37 @@
+{
+  "text.holograms.already_exist": "El holograma %s ya existe!",
+  "text.holograms.invalid_hologram": "El holograma %s no existe!",
+  "text.holograms.created": "Se ha creado el holograma %s en %s!",
+  "text.holograms.moved": "Se ha movido el holograma %s a %s!",
+  "text.holograms.deleted": "Se ha removido el holograma %s!",
+  "text.holograms.renamed": "Se ha renombrado el holograma %s a %s!",
+  "text.holograms.removed_line": "Se ha removido la línea \"%3$s\" (%2$s) de %1$s",
+  "text.holograms.non_existing_line": "La línea %2$s no existe en %1$s!",
+
+  "text.holograms.added_line": "Se ha añadido la línea \"%2$s\" a %1$s",
+  "text.holograms.inserted_line": "Se ha insertado la línea \"%3$s\" (%2$s) en %1$s",
+  "text.holograms.changed_line": "Se ha modificado la línea %2$s de %1$s a \"%3$s\"",
+  "text.holograms.changed_update_rate": "Se ha modificado la frecuencia de actualización de %2$s a %1$s tick(s)",
+  "text.holograms.changed_alignment": "Se ha cambiado el alineamiento vertical de  %s",
+  "text.holograms.permission_changed": "El holograma %s ahora es visible sólo para jugadores con el permiso %s o con nivel %s de OP",
+  "text.holograms.permission_removed": "El holograma %s ya no requiere permisos",
+
+  "text.holograms.info_name": "Holograma: %s (%s)",
+  "text.holograms.info_update_rate": "Frecuencia de actualización: %s",
+  "text.holograms.info_alignment": "Alineamiento vertical: %s",
+
+  "text.holograms.space_height": "[Espacio: %s bloques]",
+  "text.holograms.particle": "[Partícula: %s type, %s rate, %s pos, %s delta, %s speed, %s]",
+  "text.holograms.particle.normal": "[Partícula: %s type, %s rate, %s pos, %s delta, %s speed, %s count, %s]",
+  "text.holograms.particle.forced": "Normal",
+  "text.holograms.particle.forced": "Forzado",
+  "text.holograms.executor_name": "[Ejecutador]",
+  "text.holograms.executor_hover": "Hitbox: %s\nModo: %s\nComando: %s",
+  "text.holograms.image_name": "[Imagen (%s)]",
+  "text.holograms.image_hover": "Imagen: %s\nAltura: %s\nLarga Distancia: %s\nSuavizado: %s",
+
+  "text.holograms.default_text": "Puedes modificar este holograma usando: /holograms modify %s",
+
+  "text.holograms.invalid_hitbox": "El tipo de hitbox %s no es válido!",
+  "text.holograms.invalid_mode": "El modo de ejecución %s no es válido!"
+}
