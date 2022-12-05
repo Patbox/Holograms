@@ -31,20 +31,14 @@ public class ImageLongDistanceHologramElement extends ImageAbstractHologramEleme
             player.networkHandler.sendPacket(new EntitySpawnS2CPacket(entityId, this.uuids.get(i), pos.x, pos.y + this.getHeightDifference(i, hologram), pos.z, 0, 0, EntityType.ARMOR_STAND, 0, Vec3d.ZERO, 0));
 
             {
-                var packet = HologramHelper.createUnsafe(EntityTrackerUpdateS2CPacket.class);
-                var accessor = (EntityTrackerUpdateS2CPacketAccessor) packet;
+                List<DataTracker.SerializedEntry<?>> data = new ArrayList<>();
+                data.add(DataTracker.SerializedEntry.of(EntityAccessor.getNoGravity(), true));
+                data.add(DataTracker.SerializedEntry.of(EntityAccessor.getFlags(), (byte) 0x20));
+                data.add(DataTracker.SerializedEntry.of(EntityAccessor.getCustomName(), Optional.of(this.texts.get(i))));
+                data.add(DataTracker.SerializedEntry.of(EntityAccessor.getNameVisible(), true));
+                data.add(DataTracker.SerializedEntry.of(ArmorStandEntityAccessor.getArmorStandFlags(), (byte) 0x19));
 
-                accessor.setId(entityId);
-                List<DataTracker.Entry<?>> data = new ArrayList<>();
-                data.add(new DataTracker.Entry<>(EntityAccessor.getNoGravity(), true));
-                data.add(new DataTracker.Entry<>(EntityAccessor.getFlags(), (byte) 0x20));
-                data.add(new DataTracker.Entry<>(EntityAccessor.getCustomName(), Optional.of(this.texts.get(i))));
-                data.add(new DataTracker.Entry<>(EntityAccessor.getNameVisible(), true));
-                data.add(new DataTracker.Entry<>(ArmorStandEntityAccessor.getArmorStandFlags(), (byte) 0x19));
-
-                accessor.setTrackedValues(data);
-
-                player.networkHandler.sendPacket(packet);
+                player.networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(entityId, data));
             }
         }
     }

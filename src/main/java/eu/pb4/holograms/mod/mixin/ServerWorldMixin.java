@@ -2,11 +2,10 @@ package eu.pb4.holograms.mod.mixin;
 
 import eu.pb4.holograms.mod.hologram.HoloServerWorld;
 import eu.pb4.holograms.mod.hologram.HologramManager;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.WorldGenerationProgressListener;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.registry.RegistryEntry;
-import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.dimension.DimensionOptions;
 import net.minecraft.world.level.ServerWorldProperties;

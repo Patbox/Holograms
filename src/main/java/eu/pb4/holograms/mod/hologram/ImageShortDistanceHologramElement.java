@@ -5,7 +5,6 @@ import eu.pb4.holograms.impl.HologramHelper;
 import eu.pb4.holograms.mixin.accessors.AreaEffectCloudEntityAccessor;
 import eu.pb4.holograms.mixin.accessors.EntityAccessor;
 import eu.pb4.holograms.mixin.accessors.EntityPositionS2CPacketAccessor;
-import eu.pb4.holograms.mixin.accessors.EntityTrackerUpdateS2CPacketAccessor;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
@@ -32,17 +31,12 @@ public class ImageShortDistanceHologramElement extends ImageAbstractHologramElem
             var entityId = this.entityIds.getInt(i);
             player.networkHandler.sendPacket(new EntitySpawnS2CPacket(entityId, this.uuids.get(i), pos.x, pos.y - 0.9 + this.getHeightDifference(i, hologram), pos.z, 0, 0, EntityType.AREA_EFFECT_CLOUD, 0, Vec3d.ZERO, 0));
 
-            var packet = HologramHelper.createUnsafe(EntityTrackerUpdateS2CPacket.class);
-            EntityTrackerUpdateS2CPacketAccessor accessor = (EntityTrackerUpdateS2CPacketAccessor) packet;
-            accessor.setId(entityId);
+            List<DataTracker.SerializedEntry<?>> data = new ArrayList<>();
+            data.add(DataTracker.SerializedEntry.of(AreaEffectCloudEntityAccessor.getRadius(), 0f));
+            data.add(DataTracker.SerializedEntry.of(EntityAccessor.getCustomName(), Optional.of(this.texts.get(i))));
+            data.add(DataTracker.SerializedEntry.of(EntityAccessor.getNameVisible(), true));
 
-            List<DataTracker.Entry<?>> data = new ArrayList<>();
-            data.add(new DataTracker.Entry<>(AreaEffectCloudEntityAccessor.getRadius(), 0f));
-            data.add(new DataTracker.Entry<>(EntityAccessor.getCustomName(), Optional.of(this.texts.get(i))));
-            data.add(new DataTracker.Entry<>(EntityAccessor.getNameVisible(), true));
-            accessor.setTrackedValues(data);
-
-            player.networkHandler.sendPacket(packet);
+            player.networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(entityId, data));
         }
     }
 

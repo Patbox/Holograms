@@ -18,15 +18,16 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.nbt.visitor.StringNbtWriter;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registry;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import javax.imageio.ImageIO;
 import java.net.URL;
@@ -134,7 +135,7 @@ public abstract class StoredElement<T> {
             if (this.value.getNbt() != null) {
                 nbt = new StringNbtWriter().apply(this.value.getNbt());
             }
-            return "item nbt " + Registry.ITEM.getId(this.value.getItem()) + nbt + " " + this.isStatic;
+            return "item nbt " + Registries.ITEM.getId(this.value.getItem()) + nbt + " " + this.isStatic;
         }
     }
 
@@ -274,7 +275,7 @@ public abstract class StoredElement<T> {
                     this.value.parameters.asString(),
                     this.value.rate,
                     String.format("%.2f %.2f %.2f", this.value.pos.x, this.value.pos.y, this.value.pos.z),
-                    String.format("%.2f %.2f %.2f", this.value.delta.getX(), this.value.delta.getY(), this.value.delta.getZ()),
+                    String.format("%.2f %.2f %.2f", this.value.delta.x, this.value.delta.y, this.value.delta.z),
                     String.format("%.2f", this.value.speed),
                     this.value.count,
                     net.minecraft.text.Text.translatable("text.holograms.particle." + (this.value.force ? "force" : "normal"))
@@ -284,14 +285,14 @@ public abstract class StoredElement<T> {
         @Override
         public @Nullable String toArgs() {
             return "particle " + this.value.parameters.asString() + " " + this.value.rate + " " + this.value.pos.x + " " + this.value.pos.y
-                    + " " + this.value.pos.z + " " + this.value.delta.getX() + " " + this.value.delta.getY() + " " + this.value.delta.getZ()
+                    + " " + this.value.pos.z + " " + this.value.delta.x() + " " + this.value.delta.y + " " + this.value.delta.z
                     + " " + this.value.speed + " " + this.value.count + " " + (this.value.force ? "force" : "normal");
         }
 
         public record Value(
                 ParticleEffect parameters,
                 Vec3d pos,
-                Vec3f delta,
+                Vector3f delta,
                 float speed,
                 int count,
                 boolean force,
@@ -303,9 +304,9 @@ public abstract class StoredElement<T> {
                 nbt.putDouble("PosX", pos.x);
                 nbt.putDouble("PosY", pos.y);
                 nbt.putDouble("PosZ", pos.z);
-                nbt.putFloat("DeltaX", delta.getX());
-                nbt.putFloat("DeltaY", delta.getY());
-                nbt.putFloat("DeltaZ", delta.getZ());
+                nbt.putFloat("DeltaX", delta.x);
+                nbt.putFloat("DeltaY", delta.y);
+                nbt.putFloat("DeltaZ", delta.z);
                 nbt.putFloat("Speed", speed);
                 nbt.putInt("Speed", count);
                 nbt.putBoolean("Force", force);
@@ -316,9 +317,9 @@ public abstract class StoredElement<T> {
             public static Value fromNbt(NbtCompound nbt) {
                 try {
                     return new Value(
-                            ParticleEffectArgumentType.readParameters(new StringReader(nbt.getString("Type"))),
+                            ParticleEffectArgumentType.readParameters(new StringReader(nbt.getString("Type")), Registries.PARTICLE_TYPE.getReadOnlyWrapper()),
                             new Vec3d(nbt.getDouble("PosX"), nbt.getDouble("PosY"), nbt.getDouble("PosZ")),
-                            new Vec3f(nbt.getFloat("DeltaX"), nbt.getFloat("DeltaY"), nbt.getFloat("DeltaZ")),
+                            new Vector3f(nbt.getFloat("DeltaX"), nbt.getFloat("DeltaY"), nbt.getFloat("DeltaZ")),
                             nbt.getFloat("Speed"),
                             nbt.getInt("Speed"),
                             nbt.getBoolean("Force"),
@@ -326,7 +327,7 @@ public abstract class StoredElement<T> {
                     );
                 } catch (Exception e) {
                     e.printStackTrace();
-                    return new Value(ParticleTypes.AMBIENT_ENTITY_EFFECT, Vec3d.ZERO, Vec3f.ZERO, 0f, 0, false, 0);
+                    return new Value(ParticleTypes.AMBIENT_ENTITY_EFFECT, Vec3d.ZERO, new Vector3f(), 0f, 0, false, 0);
                 }
             }
         }

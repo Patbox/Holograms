@@ -53,9 +53,9 @@ public record ParticleEmitterPlaceholderElement(StoredElement.ParticleEmitter.Va
                     this.value.pos().x + pos.x,
                     this.value.pos().y + pos.y,
                     this.value.pos().z + pos.z,
-                    this.value.delta().getX(),
-                    this.value.delta().getY(),
-                    this.value.delta().getZ(),
+                    this.value.delta().x,
+                    this.value.delta().y,
+                    this.value.delta().z,
                     this.value.speed(),
                     this.value.count()
             );

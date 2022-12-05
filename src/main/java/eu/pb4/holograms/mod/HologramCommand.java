@@ -20,6 +20,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleEffect;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -27,8 +30,8 @@ import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registry;
+import org.joml.Vector3f;
 
 import java.util.List;
 import java.util.Locale;
@@ -252,10 +255,10 @@ public class HologramCommand {
                                         }
                                 )
                 )).then(literal("entity").then(
-                        argument("entity", EntitySummonArgumentType.entitySummon())
+                        argument("entity", new RegistryEntryArgumentType<>(registryAccess, RegistryKeys.ENTITY_TYPE))
                                 .executes(ctx -> callback.modify(ctx,
                                         new StoredElement.Entity(
-                                                Registry.ENTITY_TYPE.get(ctx.getArgument("entity", Identifier.class))
+                                                Registries.ENTITY_TYPE.get(ctx.getArgument("entity", Identifier.class))
                                                         .create(ctx.getSource().getWorld()), true))
                                 ).then(argument("nbt", NbtCompoundArgumentType.nbtCompound())
                                         .executes(ctx -> {
@@ -281,7 +284,7 @@ public class HologramCommand {
 
                                 )
                 )).then(literal("particle").then(
-                        argument("particle", ParticleEffectArgumentType.particleEffect())
+                        argument("particle", ParticleEffectArgumentType.particleEffect(registryAccess))
                                 .executes((ctx) -> createParticle(ctx, callback, ParticleEffectArgumentType.getParticle(ctx, "particle"),
                                         20, Vec3d.ZERO, Vec3d.ZERO, 0.0F, 0, false))
                                 .then(argument("updateRate", IntegerArgumentType.integer(1))
@@ -322,7 +325,7 @@ public class HologramCommand {
         return callback.modify(context, new StoredElement.ParticleEmitter(new StoredElement.ParticleEmitter.Value(
                 particle,
                 pos,
-                new Vec3f((float) delta.x, (float) delta.y, (float) delta.z),
+                new Vector3f((float) delta.x, (float) delta.y, (float) delta.z),
                 speed,
                 count,
                 force,

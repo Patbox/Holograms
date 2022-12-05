@@ -28,7 +28,7 @@
   "depends": {
     "fabricloader": ">=0.12.5",
     "fabric": "*",
-    "minecraft": ">=1.19.1",
+    "minecraft": ">=1.19.3-beta3",
     "hologram-api": ">=0.2.1",
     "java": ">=17"
   }

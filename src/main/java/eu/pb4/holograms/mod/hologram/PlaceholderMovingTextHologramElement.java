@@ -4,7 +4,6 @@ import eu.pb4.holograms.api.elements.text.MovingTextHologramElement;
 import eu.pb4.holograms.api.holograms.AbstractHologram;
 import eu.pb4.holograms.impl.HologramHelper;
 import eu.pb4.holograms.mixin.accessors.EntityAccessor;
-import eu.pb4.holograms.mixin.accessors.EntityTrackerUpdateS2CPacketAccessor;
 import eu.pb4.placeholders.api.PlaceholderContext;
 import eu.pb4.placeholders.api.Placeholders;
 import eu.pb4.placeholders.api.node.TextNode;
@@ -42,13 +41,9 @@ public class PlaceholderMovingTextHologramElement extends MovingTextHologramElem
                 Text text = this.cache.get(player.getUuid());
                 Text out = this.getTextFor(player);
                 if (!out.equals(text)) {
-                    EntityTrackerUpdateS2CPacket packet = HologramHelper.createUnsafe(EntityTrackerUpdateS2CPacket.class);
-                    EntityTrackerUpdateS2CPacketAccessor accessor = (EntityTrackerUpdateS2CPacketAccessor) packet;
-                    accessor.setId(this.entityId);
-                    List<DataTracker.Entry<?>> data = new ArrayList<>();
-                    data.add(new DataTracker.Entry<>(EntityAccessor.getCustomName(), Optional.of(out)));
-                    accessor.setTrackedValues(data);
-                    player.networkHandler.sendPacket(packet);
+                    List<DataTracker.SerializedEntry<?>> data = new ArrayList<>();
+                    data.add(DataTracker.SerializedEntry.of(EntityAccessor.getCustomName(), Optional.of(out)));
+                    player.networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(this.entityId, data));
                     this.cache.put(player.getUuid(), out);
                 }
 
