@@ -3,8 +3,8 @@
   "id": "holograms",
   "version": "${version}",
 
-  "name": "Holograms",
-  "description": "Server side holograms!",
+  "name": "Holograms (Legacy Edition)",
+  "description": "Server side holograms! (Legacy/Non-Display Edition)",
   "authors": [
     "Patbox"
   ],

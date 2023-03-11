@@ -14,6 +14,7 @@ import eu.pb4.holograms.mod.hologram.StoredElement;
 import eu.pb4.holograms.mod.hologram.StoredHologram;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.*;
 import net.minecraft.entity.Entity;
@@ -21,16 +22,17 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.*;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.registry.Registry;
 import org.joml.Vector3f;
 
 import java.util.List;
@@ -42,10 +44,12 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class HologramCommand {
+    private static final boolean IS_MODERN = FabricLoader.getInstance().isModLoaded("holograms2");
+
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
                     var command = dispatcher.register(
-                            literal("holograms")
+                            literal("hologramslegacy")
                                     .requires(Permissions.require("holograms.main", true))
                                     .executes(HologramCommand::about)
                                     .then(literal("create")
@@ -137,13 +141,28 @@ public class HologramCommand {
                                     )
                     );
 
-                    dispatcher.register(literal("holo").redirect(command));
-                    dispatcher.register(literal("hd").redirect(command));
+                    if (!IS_MODERN) {
+                        dispatcher.register(literal("holograms")
+                                .requires(Permissions.require("holograms.main", true))
+                                .executes(HologramCommand::about)
+                                .redirect(command)
+
+                        );
+                        dispatcher.register(literal("holo")
+                                .requires(Permissions.require("holograms.main", true))
+                                .executes(HologramCommand::about)
+                                .redirect(command)
+                        );
+                        dispatcher.register(literal("hd")
+                                .requires(Permissions.require("holograms.main", true))
+                                .executes(HologramCommand::about)
+                                .redirect(command));
+                    }
                 }
         );
     }
 
-    private static ArgumentBuilder<ServerCommandSource,?> createAlignment(LiteralArgumentBuilder<ServerCommandSource> alignment) {
+    private static ArgumentBuilder<ServerCommandSource, ?> createAlignment(LiteralArgumentBuilder<ServerCommandSource> alignment) {
         for (var val : AbstractHologram.VerticalAlign.values()) {
             alignment = alignment.then(
                     literal(val.name()).executes(ctx -> changeAlignment(ctx, val))
@@ -541,8 +560,7 @@ public class HologramCommand {
                     .append(Text.translatable("text.holograms.info_update_rate", Text.literal("" + hologram.getUpdateRate()).formatted(Formatting.YELLOW)))
                     .append("\n")
                     .append(Text.translatable("text.holograms.info_alignment", Text.literal("" + hologram.getAlignment().name()).formatted(Formatting.GOLD)))
-                    .append("\n")
-                    ;
+                    .append("\n");
 
             context.getSource().sendFeedback(text, false);
 
@@ -667,8 +685,9 @@ public class HologramCommand {
     }
 
     private static int about(CommandContext<ServerCommandSource> context) {
-        context.getSource().sendFeedback(Text.literal("Holograms")
-                .formatted(Formatting.GREEN)
+        context.getSource().sendFeedback(Text.literal("Holograms ")
+                .formatted(Formatting.GREEN) // Legacy means legacy!1!11!1
+                .append(Text.literal("(§aL§be§cg§da§ec§fy§r §6§oEdition§r)").formatted(Formatting.GRAY))
                 .append(Text.literal(" - " + HologramsMod.VERSION)
                         .formatted(Formatting.WHITE)
                 ), false);

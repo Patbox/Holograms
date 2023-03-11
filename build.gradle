@@ -20,7 +20,6 @@ repositories {
 	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 	maven { url = 'https://maven.nucleoid.xyz' }
 	maven { url 'https://maven.gegy.dev' }
-	maven { url 'https://maven.bymartrixx.me' }
 	mavenLocal()
 }
 
@@ -33,8 +32,8 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation include("fr.catcore:server-translations-api:1.4.18+1.19.2")
-	modImplementation include("eu.pb4:placeholder-api:2.0.0-pre.2+1.19.3")
+	modImplementation include("xyz.nucleoid:server-translations-api:2.0.0-beta.2+1.19.4-pre2")
+	modImplementation include("eu.pb4:placeholder-api:2.0.0-rc.1+1.19.3")
 	modImplementation include("eu.pb4:hologram-api:0.2.3+1.19.3")
 	modImplementation include("me.lucko:fabric-permissions-api:0.1-SNAPSHOT")
 	//modImplementation "org.jcodec:jcodec:0.2.5"

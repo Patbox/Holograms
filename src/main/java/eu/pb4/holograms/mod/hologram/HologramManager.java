@@ -39,7 +39,7 @@ public class HologramManager extends PersistentState {
 
     public boolean addHologram(StoredHologram hologram) {
         if (!this.hologramsByName.containsKey(hologram.name) && this.holograms.add(hologram)) {
-            ChunkPos chunkPos = new ChunkPos(new BlockPos(hologram.getPosition()));
+            ChunkPos chunkPos = new ChunkPos(BlockPos.ofFloored(hologram.getPosition()));
             this.hologramsByChunk.computeIfAbsent(chunkPos, (chunkPos1) -> new ArrayList<>()).add(hologram);
             this.hologramsByUuid.put(hologram.uuid, hologram);
             this.hologramsByName.put(hologram.name, hologram);
@@ -55,7 +55,7 @@ public class HologramManager extends PersistentState {
 
     public boolean removeHologram(StoredHologram hologram) {
         if (this.holograms.remove(hologram)) {
-            ChunkPos chunkPos = new ChunkPos(new BlockPos(hologram.getPosition()));
+            ChunkPos chunkPos = new ChunkPos(BlockPos.ofFloored(hologram.getPosition()));
             List<StoredHologram> list = this.hologramsByChunk.get(chunkPos);
             list.remove(hologram);
             if (list.size() == 0) {
@@ -94,8 +94,8 @@ public class HologramManager extends PersistentState {
     public void moveHologram(StoredHologram hologram, Vec3d vec3d) {
         Vec3d oldPos = hologram.getPosition();
 
-        ChunkPos oldChunkPos = new ChunkPos(new BlockPos(oldPos.x, oldPos.y, oldPos.z));
-        ChunkPos chunkPos = new ChunkPos(new BlockPos(vec3d.x, vec3d.y, vec3d.z));
+        ChunkPos oldChunkPos = new ChunkPos(BlockPos.ofFloored(oldPos.x, oldPos.y, oldPos.z));
+        ChunkPos chunkPos = new ChunkPos(BlockPos.ofFloored(vec3d.x, vec3d.y, vec3d.z));
         hologram.setPosition(vec3d);
 
         if (!oldChunkPos.equals(chunkPos)) {
