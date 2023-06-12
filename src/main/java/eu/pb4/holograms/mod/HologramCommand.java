@@ -240,11 +240,11 @@ public class HologramCommand {
                                                                     return callback.modify(ctx,
                                                                             new StoredElement.Executor(new StoredElement.Executor.Value(hitbox, mode, ctx.getArgument("command", String.class))));
                                                                 } catch (Exception e) {
-                                                                    ctx.getSource().sendFeedback(Text.translatable("text.holograms.invalid_mode", Text.literal(modeS).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+                                                                    ctx.getSource().sendFeedback(() -> Text.translatable("text.holograms.invalid_mode", Text.literal(modeS).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
                                                                     return 0;
                                                                 }
                                                             } catch (Exception e) {
-                                                                ctx.getSource().sendFeedback(Text.translatable("text.holograms.invalid_hitbox", Text.literal(hitboxS).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+                                                                ctx.getSource().sendFeedback(() -> Text.translatable("text.holograms.invalid_hitbox", Text.literal(hitboxS).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
                                                                 return 0;
                                                             }
                                                         })
@@ -258,14 +258,14 @@ public class HologramCommand {
                                             String name = ctx.getArgument("name", String.class);
 
                                             if (!manager.hologramsByName.containsKey(name)) {
-                                                ctx.getSource().sendFeedback(Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+                                                ctx.getSource().sendFeedback(() -> Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
                                                 return 0;
                                             } else {
                                                 List<StoredElement<?>> elements = manager.hologramsByName.get(name).getStoredElements();
                                                 int baseLine = ctx.getArgument("base", Integer.class);
 
                                                 if (elements.size() - 1 < baseLine) {
-                                                    ctx.getSource().sendFeedback(Text.translatable("text.holograms.non_existing_line", Text.literal(name).formatted(Formatting.GOLD), baseLine).formatted(Formatting.RED), false);
+                                                    ctx.getSource().sendFeedback(() -> Text.translatable("text.holograms.non_existing_line", Text.literal(name).formatted(Formatting.GOLD), baseLine).formatted(Formatting.RED), false);
                                                     return 0;
                                                 }
 
@@ -365,14 +365,15 @@ public class HologramCommand {
         String name = context.getArgument("name", String.class);
 
         if (manager.hologramsByName.containsKey(name)) {
-            context.getSource().sendFeedback(Text.translatable("text.holograms.already_exist", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.already_exist", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
             return 0;
         } else {
             StoredHologram hologram = StoredHologram.create(name, world, position);
             manager.addHologram(hologram);
-            context.getSource().sendFeedback(Text.translatable("text.holograms.created",
+            Vec3d finalPosition = position;
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.created",
                     Text.literal(name).formatted(Formatting.GOLD),
-                    Text.literal(String.format("%.2f %.2f %.2f", position.x, position.y, position.z)).formatted(Formatting.GRAY)
+                    Text.literal(String.format("%.2f %.2f %.2f", finalPosition.x, finalPosition.y, finalPosition.z)).formatted(Formatting.GRAY)
             ), false);
             return 1;
         }
@@ -384,11 +385,11 @@ public class HologramCommand {
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
-            context.getSource().sendFeedback(Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
             return 0;
         } else {
             manager.removeHologram(name);
-            context.getSource().sendFeedback(Text.translatable("text.holograms.deleted", Text.literal(name).formatted(Formatting.GOLD)), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.deleted", Text.literal(name).formatted(Formatting.GOLD)), false);
             return 1;
         }
     }
@@ -400,16 +401,16 @@ public class HologramCommand {
         String new_name = context.getArgument("new_name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
-            context.getSource().sendFeedback(Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
             return 0;
         } else {
             if (manager.hologramsByName.containsKey(new_name)) {
-                context.getSource().sendFeedback(Text.translatable("text.holograms.already_exist", Text.literal(new_name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+                context.getSource().sendFeedback(() -> Text.translatable("text.holograms.already_exist", Text.literal(new_name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
             } else {
                 StoredHologram hologram = manager.hologramsByName.remove(name);
                 hologram.setName(new_name);
                 manager.hologramsByName.put(new_name, hologram);
-                context.getSource().sendFeedback(Text.translatable("text.holograms.renamed", Text.literal(name).formatted(Formatting.GOLD), Text.literal(new_name).formatted(Formatting.GOLD)), false);
+                context.getSource().sendFeedback(() -> Text.translatable("text.holograms.renamed", Text.literal(name).formatted(Formatting.GOLD), Text.literal(new_name).formatted(Formatting.GOLD)), false);
             }
             return 1;
         }
@@ -429,14 +430,15 @@ public class HologramCommand {
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
-            context.getSource().sendFeedback(Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
             return 0;
         } else {
             StoredHologram hologram = manager.hologramsByName.get(name);
             manager.moveHologram(hologram, position);
-            context.getSource().sendFeedback(Text.translatable("text.holograms.moved",
+            Vec3d finalPosition = position;
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.moved",
                     Text.literal(name).formatted(Formatting.GOLD),
-                    Text.literal(String.format("%.2f %.2f %.2f", position.x, position.y, position.z)).formatted(Formatting.GRAY)
+                    Text.literal(String.format("%.2f %.2f %.2f", finalPosition.x, finalPosition.y, finalPosition.z)).formatted(Formatting.GRAY)
             ), false);
             return 1;
         }
@@ -449,7 +451,7 @@ public class HologramCommand {
         ServerPlayerEntity player = context.getSource().getPlayer();
 
         if (!manager.hologramsByName.containsKey(name)) {
-            context.getSource().sendFeedback(Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
             return 0;
         } else {
             StoredHologram hologram = manager.hologramsByName.get(name);
@@ -464,13 +466,13 @@ public class HologramCommand {
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
-            context.getSource().sendFeedback(Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
             return 0;
         } else {
             int updateRate = context.getArgument("value", Integer.class);
             StoredHologram hologram = manager.hologramsByName.get(name);
             hologram.setUpdateRate(updateRate);
-            context.getSource().sendFeedback(Text.translatable("text.holograms.changed_update_rate",
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.changed_update_rate",
                     Text.literal("" + updateRate).formatted(Formatting.YELLOW),
                     Text.literal(name).formatted(Formatting.GOLD)), false);
             return 1;
@@ -483,12 +485,12 @@ public class HologramCommand {
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
-            context.getSource().sendFeedback(Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
             return 0;
         } else {
             StoredHologram hologram = manager.hologramsByName.get(name);
             hologram.setAlignment(alignment);
-            context.getSource().sendFeedback(Text.translatable("text.holograms.changed_alignment",
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.changed_alignment",
                     Text.literal("" + alignment).formatted(Formatting.YELLOW),
                     Text.literal(name).formatted(Formatting.GOLD)), false);
             return 1;
@@ -501,7 +503,7 @@ public class HologramCommand {
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
-            context.getSource().sendFeedback(Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
             return 0;
         } else {
             StoredHologram hologram = manager.hologramsByName.get(name);
@@ -516,10 +518,11 @@ public class HologramCommand {
 
             hologram.setPermissions(permission, operator);
 
-            context.getSource().sendFeedback(Text.translatable("text.holograms.permission_changed",
+            int finalOperator = operator;
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.permission_changed",
                     Text.literal(name).formatted(Formatting.GOLD),
                     Text.literal(permission).formatted(Formatting.YELLOW),
-                    Text.literal("" + operator).formatted(Formatting.YELLOW)), false);
+                    Text.literal("" + finalOperator).formatted(Formatting.YELLOW)), false);
             return 1;
         }
     }
@@ -530,13 +533,13 @@ public class HologramCommand {
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
-            context.getSource().sendFeedback(Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
             return 0;
         } else {
             StoredHologram hologram = manager.hologramsByName.get(name);
 
             hologram.setPermissions("", 0);
-            context.getSource().sendFeedback(Text.translatable("text.holograms.permission_removed",
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.permission_removed",
                     Text.literal(name).formatted(Formatting.GOLD)), false);
             return 1;
         }
@@ -548,7 +551,7 @@ public class HologramCommand {
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
-            context.getSource().sendFeedback(Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
             return 0;
         } else {
             StoredHologram hologram = manager.hologramsByName.get(name);
@@ -562,7 +565,7 @@ public class HologramCommand {
                     .append(Text.translatable("text.holograms.info_alignment", Text.literal("" + hologram.getAlignment().name()).formatted(Formatting.GOLD)))
                     .append("\n");
 
-            context.getSource().sendFeedback(text, false);
+            context.getSource().sendFeedback(() -> text, false);
 
             int x = 0;
             for (StoredElement<?> element : hologram.getStoredElements()) {
@@ -578,7 +581,7 @@ public class HologramCommand {
                         )
                         .append(element.toText());
 
-                context.getSource().sendFeedback(text1, false);
+                context.getSource().sendFeedback(() -> text1, false);
 
                 x++;
             }
@@ -593,18 +596,18 @@ public class HologramCommand {
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
-            context.getSource().sendFeedback(Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
             return 0;
         } else {
             StoredHologram hologram = manager.hologramsByName.get(name);
             int pos = context.getArgument("position", Integer.class);
             if (hologram.getElements().size() - 1 < pos) {
-                context.getSource().sendFeedback(Text.translatable("text.holograms.non_existing_line", Text.literal(name).formatted(Formatting.GOLD), pos).formatted(Formatting.RED), false);
+                context.getSource().sendFeedback(() -> Text.translatable("text.holograms.non_existing_line", Text.literal(name).formatted(Formatting.GOLD), pos).formatted(Formatting.RED), false);
                 return 0;
             }
 
             StoredElement<?> element = hologram.removeStoredElement(pos);
-            context.getSource().sendFeedback(Text.translatable("text.holograms.removed_line", Text.literal(name).formatted(Formatting.GOLD), pos, element.toText()), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.removed_line", Text.literal(name).formatted(Formatting.GOLD), pos, element.toText()), false);
             return 1;
         }
     }
@@ -615,13 +618,13 @@ public class HologramCommand {
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
-            context.getSource().sendFeedback(Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
             return 0;
         } else {
             StoredHologram hologram = manager.hologramsByName.get(name);
             int pos = context.getArgument("position", Integer.class);
             hologram.insertElement(pos, element);
-            context.getSource().sendFeedback(Text.translatable("text.holograms.inserted_line", Text.literal(name).formatted(Formatting.GOLD), pos, element.toText()), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.inserted_line", Text.literal(name).formatted(Formatting.GOLD), pos, element.toText()), false);
             return 1;
         }
     }
@@ -632,7 +635,7 @@ public class HologramCommand {
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
-            context.getSource().sendFeedback(Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
             return 0;
         } else {
             StoredHologram hologram = manager.hologramsByName.get(name);
@@ -640,13 +643,13 @@ public class HologramCommand {
             int posNew = context.getArgument("new-position", Integer.class);
 
             if (hologram.getElements().size() - 1 < pos) {
-                context.getSource().sendFeedback(Text.translatable("text.holograms.non_existing_line", Text.literal(name).formatted(Formatting.GOLD), pos).formatted(Formatting.RED), false);
+                context.getSource().sendFeedback(() -> Text.translatable("text.holograms.non_existing_line", Text.literal(name).formatted(Formatting.GOLD), pos).formatted(Formatting.RED), false);
                 return 0;
             }
 
 
             hologram.insertElement(posNew, hologram.removeStoredElement(pos));
-            context.getSource().sendFeedback(Text.translatable("text.holograms.moved_line", Text.literal(name).formatted(Formatting.GOLD), pos, element.toText()), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.moved_line", Text.literal(name).formatted(Formatting.GOLD), pos, element.toText()), false);
             return 1;
         }
     }
@@ -657,12 +660,12 @@ public class HologramCommand {
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
-            context.getSource().sendFeedback(Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
             return 0;
         } else {
             StoredHologram hologram = manager.hologramsByName.get(name);
             hologram.addElement(element);
-            context.getSource().sendFeedback(Text.translatable("text.holograms.added_line", Text.literal(name).formatted(Formatting.GOLD), element.toText()), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.added_line", Text.literal(name).formatted(Formatting.GOLD), element.toText()), false);
             return 1;
         }
     }
@@ -673,19 +676,19 @@ public class HologramCommand {
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
-            context.getSource().sendFeedback(Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.invalid_hologram", Text.literal(name).formatted(Formatting.GOLD)).formatted(Formatting.RED), false);
             return 0;
         } else {
             StoredHologram hologram = manager.hologramsByName.get(name);
             int pos = context.getArgument("position", Integer.class);
             hologram.setElement(pos, element);
-            context.getSource().sendFeedback(Text.translatable("text.holograms.changed_line", Text.literal(name).formatted(Formatting.GOLD), pos, element.toText()), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.holograms.changed_line", Text.literal(name).formatted(Formatting.GOLD), pos, element.toText()), false);
             return 1;
         }
     }
 
     private static int about(CommandContext<ServerCommandSource> context) {
-        context.getSource().sendFeedback(Text.literal("Holograms ")
+        context.getSource().sendFeedback(() -> Text.literal("Holograms ")
                 .formatted(Formatting.GREEN) // Legacy means legacy!1!11!1
                 .append(Text.literal("(§aL§be§cg§da§ec§fy§r §6§oEdition§r)").formatted(Formatting.GRAY))
                 .append(Text.literal(" - " + HologramsMod.VERSION)
