@@ -254,7 +254,7 @@ public class HologramCommand {
                         argument("base", IntegerArgumentType.integer(0))
                                 .executes(ctx -> {
                                             ServerWorld world = ctx.getSource().getWorld();
-                                            HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+                                            HologramManager manager = ((HoloServerWorld) world).holograms$getHologramManager();
                                             String name = ctx.getArgument("name", String.class);
 
                                             if (!manager.hologramsByName.containsKey(name)) {
@@ -354,7 +354,7 @@ public class HologramCommand {
 
     private static int createHologram(CommandContext<ServerCommandSource> context) {
         ServerWorld world = context.getSource().getWorld();
-        HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+        HologramManager manager = ((HoloServerWorld) world).holograms$getHologramManager();
         Vec3d position;
         try {
             position = context.getArgument("pos", PosArgument.class).toAbsolutePos(context.getSource());
@@ -381,7 +381,7 @@ public class HologramCommand {
 
     private static int removeHologram(CommandContext<ServerCommandSource> context) {
         ServerWorld world = context.getSource().getWorld();
-        HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+        HologramManager manager = ((HoloServerWorld) world).holograms$getHologramManager();
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
@@ -396,7 +396,7 @@ public class HologramCommand {
 
     private static int renameHologram(CommandContext<ServerCommandSource> context) {
         ServerWorld world = context.getSource().getWorld();
-        HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+        HologramManager manager = ((HoloServerWorld) world).holograms$getHologramManager();
         String name = context.getArgument("name", String.class);
         String new_name = context.getArgument("new_name", String.class);
 
@@ -419,7 +419,7 @@ public class HologramCommand {
 
     private static int moveHologram(CommandContext<ServerCommandSource> context) {
         ServerWorld world = context.getSource().getWorld();
-        HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+        HologramManager manager = ((HoloServerWorld) world).holograms$getHologramManager();
         Vec3d position;
         try {
             position = context.getArgument("pos", PosArgument.class).toAbsolutePos(context.getSource());
@@ -446,7 +446,7 @@ public class HologramCommand {
 
     private static int teleportToHologram(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerWorld world = context.getSource().getWorld();
-        HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+        HologramManager manager = ((HoloServerWorld) world).holograms$getHologramManager();
         String name = context.getArgument("name", String.class);
         ServerPlayerEntity player = context.getSource().getPlayer();
 
@@ -462,7 +462,7 @@ public class HologramCommand {
 
     private static int changeUpdateRate(CommandContext<ServerCommandSource> context) {
         ServerWorld world = context.getSource().getWorld();
-        HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+        HologramManager manager = ((HoloServerWorld) world).holograms$getHologramManager();
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
@@ -481,7 +481,7 @@ public class HologramCommand {
 
     private static int changeAlignment(CommandContext<ServerCommandSource> context, AbstractHologram.VerticalAlign alignment) {
         ServerWorld world = context.getSource().getWorld();
-        HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+        HologramManager manager = ((HoloServerWorld) world).holograms$getHologramManager();
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
@@ -499,7 +499,7 @@ public class HologramCommand {
 
     private static int setPermission(CommandContext<ServerCommandSource> context) {
         ServerWorld world = context.getSource().getWorld();
-        HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+        HologramManager manager = ((HoloServerWorld) world).holograms$getHologramManager();
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
@@ -529,7 +529,7 @@ public class HologramCommand {
 
     private static int removePermission(CommandContext<ServerCommandSource> context) {
         ServerWorld world = context.getSource().getWorld();
-        HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+        HologramManager manager = ((HoloServerWorld) world).holograms$getHologramManager();
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
@@ -547,7 +547,7 @@ public class HologramCommand {
 
     private static int infoHologram(CommandContext<ServerCommandSource> context) {
         ServerWorld world = context.getSource().getWorld();
-        HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+        HologramManager manager = ((HoloServerWorld) world).holograms$getHologramManager();
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
@@ -592,7 +592,7 @@ public class HologramCommand {
 
     private static int removeElement(CommandContext<ServerCommandSource> context) {
         ServerWorld world = context.getSource().getWorld();
-        HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+        HologramManager manager = ((HoloServerWorld) world).holograms$getHologramManager();
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
@@ -614,7 +614,7 @@ public class HologramCommand {
 
     private static int insertElement(CommandContext<ServerCommandSource> context, StoredElement<?> element) {
         ServerWorld world = context.getSource().getWorld();
-        HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+        HologramManager manager = ((HoloServerWorld) world).holograms$getHologramManager();
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
@@ -656,7 +656,7 @@ public class HologramCommand {
 */
     private static int addElement(CommandContext<ServerCommandSource> context, StoredElement<?> element) {
         ServerWorld world = context.getSource().getWorld();
-        HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+        HologramManager manager = ((HoloServerWorld) world).holograms$getHologramManager();
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
@@ -672,7 +672,7 @@ public class HologramCommand {
 
     private static int setElement(CommandContext<ServerCommandSource> context, StoredElement<?> element) {
         ServerWorld world = context.getSource().getWorld();
-        HologramManager manager = ((HoloServerWorld) world).getHologramManager();
+        HologramManager manager = ((HoloServerWorld) world).holograms$getHologramManager();
         String name = context.getArgument("name", String.class);
 
         if (!manager.hologramsByName.containsKey(name)) {
@@ -701,7 +701,7 @@ public class HologramCommand {
     private static CompletableFuture<Suggestions> hologramsSuggestion(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) {
         String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
 
-        Set<StoredHologram> holograms = ((HoloServerWorld) context.getSource().getWorld()).getHologramManager().holograms;
+        Set<StoredHologram> holograms = ((HoloServerWorld) context.getSource().getWorld()).holograms$getHologramManager().holograms;
 
         for (var hologram : holograms) {
             if (hologram.getName().toLowerCase(Locale.ROOT).contains(remaining)) {
