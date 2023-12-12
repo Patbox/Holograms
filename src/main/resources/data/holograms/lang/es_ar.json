@@ -23,7 +23,6 @@
   "text.holograms.space_height": "[Espacio: %s bloques]",
   "text.holograms.particle": "[Partícula: %s type, %s rate, %s pos, %s delta, %s speed, %s]",
   "text.holograms.particle.normal": "[Partícula: %s type, %s rate, %s pos, %s delta, %s speed, %s count, %s]",
-  "text.holograms.particle.forced": "Normal",
   "text.holograms.particle.forced": "Forzado",
   "text.holograms.executor_name": "[Ejecutador]",
   "text.holograms.executor_hover": "Hitbox: %s\nModo: %s\nComando: %s",

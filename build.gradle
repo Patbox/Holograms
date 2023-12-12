@@ -32,9 +32,9 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation include("xyz.nucleoid:server-translations-api:2.0.0+1.20")
-	modImplementation include("eu.pb4:placeholder-api:2.1.1+1.20")
-	modImplementation include("eu.pb4:hologram-api:0.2.4+1.20")
+	modImplementation include("xyz.nucleoid:server-translations-api:${project.server_translations}")
+	modImplementation include("eu.pb4:placeholder-api:${project.placeholder_api}")
+	modImplementation include("eu.pb4:hologram-api:${project.hologram_api}")
 	modImplementation include("me.lucko:fabric-permissions-api:0.1-SNAPSHOT")
 	//modImplementation "org.jcodec:jcodec:0.2.5"
 	//modImplementation "org.jcodec:jcodec-javase:0.2.5"

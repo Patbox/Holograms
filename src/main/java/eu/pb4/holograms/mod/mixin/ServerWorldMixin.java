@@ -2,11 +2,13 @@ package eu.pb4.holograms.mod.mixin;
 
 import eu.pb4.holograms.mod.hologram.HoloServerWorld;
 import eu.pb4.holograms.mod.hologram.HologramManager;
+import net.minecraft.datafixer.DataFixTypes;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.WorldGenerationProgressListener;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.random.RandomSequencesState;
+import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.dimension.DimensionOptions;
 import net.minecraft.world.level.ServerWorldProperties;
@@ -29,14 +31,18 @@ public abstract class ServerWorldMixin implements HoloServerWorld {
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void initiateHolograms(MinecraftServer server, Executor workerExecutor, LevelStorage.Session session, ServerWorldProperties properties, RegistryKey worldKey, DimensionOptions dimensionOptions, WorldGenerationProgressListener worldGenerationProgressListener, boolean debugWorld, long seed, List spawners, boolean shouldTickTime, RandomSequencesState randomSequencesState, CallbackInfo ci) {
-        this.hologramManager = this.getPersistentStateManager().getOrCreate((nbtCompound) -> HologramManager.fromNbt((ServerWorld) (Object) this, nbtCompound),
-                () -> new HologramManager((ServerWorld) (Object) this),
+        this.hologramManager = this.getPersistentStateManager().getOrCreate(
+                new PersistentState.Type<HologramManager>(
+                        () -> new HologramManager((ServerWorld) (Object) this),
+                        (nbtCompound) -> HologramManager.fromNbt((ServerWorld) (Object) this, nbtCompound),
+                        DataFixTypes.ENTITY_CHUNK
+                ),
         "holograms");
 
     }
 
     @Override
-    public HologramManager getHologramManager() {
+    public HologramManager holograms$getHologramManager() {
         return this.hologramManager;
     }
 }
